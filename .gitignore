@@ -1,0 +1,7 @@
+.ipynb_checkpoints/*
+*.pdf
+*.tex
+*/__pycache__/*
+__pycache__/*
+*.o
+*.log
