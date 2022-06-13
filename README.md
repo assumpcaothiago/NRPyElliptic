@@ -4,6 +4,13 @@
 This repository hosts the following:  
 
 `Tutorial-NRPyElliptic_BasicEquations.ipynb`: documents the hyperbolized Hamiltonian constraint equation under the CTT formalism 
+
 `Tutorial-Start_to_Finish-NRPyElliptic.ipynb`: documents the C code generation for the standalone version of `NRPyElliptic` 
-`Tutorial-ETK_thorn-NRPyEllipticET.ipynb`: documents the Einstein Toolkit thorn version of `NRPyElliptic` 
-`NRPyElliptic_Ccodes`: trusted C code directory against which
+
+`Tutorial-ETK_thorn-NRPyEllipticET.ipynb`: documents the Einstein Toolkit thorn version of `NRPyElliptic`
+
+`NRPyElliptic`: `NRPy+`-based code
+
+Several `NRPy+`files (with minor modifications that will be incorporated into the main NRPy+ repository in the near future)
+
+`NRPyElliptic_Ccodes`: trusted C code directory
