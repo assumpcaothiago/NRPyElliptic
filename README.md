@@ -9,7 +9,7 @@ This repository hosts the following:
 
 `Tutorial-ETK_thorn-NRPyEllipticET.ipynb`: documents the Einstein Toolkit thorn version of `NRPyElliptic`
 
-`NRPyElliptic`: `NRPy+`-based code
+`NRPyElliptic_codegen`: `NRPy+`-based code
 
 Several `NRPy+`files (with minor modifications that will be incorporated into the main NRPy+ repository in the near future)
 
