@@ -7,13 +7,13 @@ This repository hosts the following:
 
 `Tutorial-Start_to_Finish-NRPyElliptic.ipynb`: documents the C code generation for the standalone version of `NRPyElliptic` 
 
-`Tutorial-ETK_thorn-NRPyEllipticET.ipynb`: documents the Einstein Toolkit thorn version of `NRPyElliptic`
-
 `NRPyElliptic_codegen`: `NRPy+`-based code
 
 Several `NRPy+`files (with minor modifications that will be incorporated into the main NRPy+ repository in the near future)
 
-`NRPyElliptic_Ccodes`: trusted C code directory
+`NRPyElliptic_Ccodes`: trusted C code directory for the standalone version
+
+`NRPyEllipticET`: Einstein Toolkit thorn based on the standalone version
 
 
 Citation:
