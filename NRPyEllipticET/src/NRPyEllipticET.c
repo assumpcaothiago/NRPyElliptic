@@ -9,29 +9,17 @@ void NRPyEllipticET(CCTK_ARGUMENTS) {
   DECLARE_CCTK_ARGUMENTS;
   DECLARE_CCTK_PARAMETERS;
 
-  // Set the size of the local grid
-  const CCTK_INT Nxx_plus_2NGHOSTS0    = N0 + 2*NGHOSTS;
-  const CCTK_INT Nxx_plus_2NGHOSTS1    = N1 + 2*NGHOSTS;
-  const CCTK_INT Nxx_plus_2NGHOSTS2    = N2 + 2*NGHOSTS;
-  const CCTK_INT Nxx_plus_2NGHOSTS_tot = Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2;
-
+  // We only find the solution to the elliptic
+  // problem on the first time this function is
+  // called (typically on the coarsest Carpet
+  // refinement level). The following if statement
+  // takes care of that. Note, however, that the
+  // solution will be obtained once per MPI process.
   if( NRPyEllipticET_uu == NULL ) {
-    // The following instructions only happen the
-    // first time this function is called.
-
-    // Allocate memory for NRPyEllipticET_xx and NRPyEllipticET_uu
-    NRPyEllipticET_xx[0] = (CCTK_REAL *)malloc(sizeof(CCTK_REAL)*Nxx_plus_2NGHOSTS0);
-    NRPyEllipticET_xx[1] = (CCTK_REAL *)malloc(sizeof(CCTK_REAL)*Nxx_plus_2NGHOSTS1);
-    NRPyEllipticET_xx[2] = (CCTK_REAL *)malloc(sizeof(CCTK_REAL)*Nxx_plus_2NGHOSTS2);
-    NRPyEllipticET_uu    = (CCTK_REAL *)malloc(sizeof(CCTK_REAL)*Nxx_plus_2NGHOSTS_tot);
-
-    // Check everything is okay
-    if( !NRPyEllipticET_uu || !NRPyEllipticET_xx[0] || !NRPyEllipticET_xx[1] || !NRPyEllipticET_xx[2] ) {
-      CCTK_ERROR("Could not allocate memory for NRPyEllipticET_uu or NRPyEllipticET_xx!");
-    }
-
     // Now solve the constraints of General Relativity
-    NRPyEllipticET_PunctureInitialData_Hyperbolic_Relaxation();
+    if( CCTK_Equals(initial_data_type, "ConformallyFlatBBH") ) {
+      NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation();
+    }
   }
 
   // Check memory has been allocated for NRPyEllipticET_uu. Error out otherwise.
@@ -40,9 +28,11 @@ void NRPyEllipticET(CCTK_ARGUMENTS) {
   }
   else {
     // Now interpolate the solution to the local ETK grid
-    NRPyEllipticET_PunctureInitialData_Initialize_ADMBase(cctkGH,cctk_lsh,x,y,z,uuGF,
-                                                          alp,betax,betay,betaz,
-                                                          gxx,gxy,gxz,gyy,gyz,gzz,
-                                                          kxx,kxy,kxz,kyy,kyz,kzz);
+    if( CCTK_Equals(initial_data_type, "ConformallyFlatBBH") ) {
+      NRPyEllipticET_conformally_flat_BBH_Initialize_ADMBase(cctkGH,cctk_lsh,x,y,z,uuGF,
+                                                             alp,betax,betay,betaz,
+                                                             gxx,gxy,gxz,gyy,gyz,gzz,
+                                                             kxx,kxy,kxz,kyy,kyz,kzz);
+    }
   }
 }

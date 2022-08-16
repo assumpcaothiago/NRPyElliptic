@@ -2,50 +2,15 @@
 # This and all other files used by the NRPyEllipticET thorn are
 # fully documented in interactive Jupyter notebooks available at
 #
-# <NRPyEllipticET URL>
+# https://github.com/assumpcaothiago/NRPyElliptic
 #
 # Tutorial notebook documenting this file:
 # Tutorial-ETK_thorn-NRPyEllipticET.ipynb
 
 # Main make.code.defn file for thorn NRPyEllipticET
-# $Header:$
 
 # Source files in this directory
-SRCS = auxevol_gfs_all_points.c \
-       Cart_to_xx_and_nearest_i0i1i2.c \
-       Cart_to_xx_and_nearest_i0i1i2_global_grid_center.c \
-       compute_ADM_Cartesian_quantities_from_uu.c \
-       driver_bcstruct.c \
-       find_timestep.c \
-       freemem_bcstruct.c \
-       get_xx_from_xyz.c \
-       initial_guess_all_points.c \
-       initial_guess_single_point.c \
-       L2_norm_of_gf.c \
-       lapse_averaged_initial_data.c \
-       lapse_power_of_psi_initial_data.c \
-       MoL_free_memory_non_y_n_gfs.c \
-       MoL_free_memory_y_n_gfs.c \
-       MoL_malloc_non_y_n_gfs.c \
-       MoL_malloc_y_n_gfs.c \
-       MoL_step_forward_in_time.c \
-       NRPyEllipticET.c \
-       NRPyEllipticET_cleanup.c \
-       NRPyEllipticET_interpolate_solution_to_ADMBase.c \
-       NRPyEllipticET_PunctureInitialData_Hyperbolic_Relaxation.c \
-       NRPyEllipticET_PunctureInitialData_Initialize_ADMBase.c \
-       print_puncture_parameters.c \
-       residual_all_points.c \
-       rfm_precompute_rfmstruct_define.c \
-       rfm_precompute_rfmstruct_freemem.c \
-       rfm_precompute_rfmstruct_malloc.c \
-       rhs_eval.c \
-       set_bcstruct.c \
-       set_Cparameters_to_default.c \
-       set_Nxx_dxx_invdx_params__and__xx.c \
-       set_up__bc_gz_map_and_parity_condns.c \
-       wavespeed_gf_all_points.c \
-       xx_to_Cart.c
+SRCS = NRPyEllipticET.c NRPyEllipticET_cleanup.c
 
 # Subdirectories containing source files
-SUBDIRS =
+SUBDIRS = conformally_flat_BBH
