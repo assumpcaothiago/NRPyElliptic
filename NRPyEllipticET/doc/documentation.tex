@@ -1,0 +1,183 @@
+% *======================================================================*
+%  Cactus Thorn template for ThornGuide documentation
+%  Author: Ian Kelley
+%  Date: Sun Jun 02, 2002
+%  $Header$
+%
+%  Thorn documentation in the latex file doc/documentation.tex
+%  will be included in ThornGuides built with the Cactus make system.
+%  The scripts employed by the make system automatically include
+%  pages about variables, parameters and scheduling parsed from the
+%  relevant thorn CCL files.
+%
+%  This template contains guidelines which help to assure that your
+%  documentation will be correctly added to ThornGuides. More
+%  information is available in the Cactus UsersGuide.
+%
+%  Guidelines:
+%   - Do not change anything before the line
+%       % START CACTUS THORNGUIDE",
+%     except for filling in the title, author, date, etc. fields.
+%        - Each of these fields should only be on ONE line.
+%        - Author names should be separated with a \\ or a comma.
+%   - You can define your own macros, but they must appear after
+%     the START CACTUS THORNGUIDE line, and must not redefine standard
+%     latex commands.
+%   - To avoid name clashes with other thorns, 'labels', 'citations',
+%     'references', and 'image' names should conform to the following
+%     convention:
+%       ARRANGEMENT_THORN_LABEL
+%     For example, an image wave.eps in the arrangement CactusWave and
+%     thorn WaveToyC should be renamed to CactusWave_WaveToyC_wave.eps
+%   - Graphics should only be included using the graphicx package.
+%     More specifically, with the "\includegraphics" command.  Do
+%     not specify any graphic file extensions in your .tex file. This
+%     will allow us to create a PDF version of the ThornGuide
+%     via pdflatex.
+%   - References should be included with the latex "\bibitem" command.
+%   - Use \begin{abstract}...\end{abstract} instead of \abstract{...}
+%   - Do not use \appendix, instead include any appendices you need as
+%     standard sections.
+%   - For the benefit of our Perl scripts, and for future extensions,
+%     please use simple latex.
+%
+% *======================================================================*
+%
+% Example of including a graphic image:
+%    \begin{figure}[ht]
+% 	\begin{center}
+%    	   \includegraphics[width=6cm]{MyArrangement_MyThorn_MyFigure}
+% 	\end{center}
+% 	\caption{Illustration of this and that}
+% 	\label{MyArrangement_MyThorn_MyLabel}
+%    \end{figure}
+%
+% Example of using a label:
+%   \label{MyArrangement_MyThorn_MyLabel}
+%
+% Example of a citation:
+%    \cite{MyArrangement_MyThorn_Author99}
+%
+% Example of including a reference
+%   \bibitem{MyArrangement_MyThorn_Author99}
+%   {J. Author, {\em The Title of the Book, Journal, or periodical}, 1 (1999),
+%   1--16. {\tt http://www.nowhere.com/}}
+%
+% *======================================================================*
+
+% If you are using CVS use this line to give version information
+% $Header$
+
+\documentclass{article}
+
+% Use the Cactus ThornGuide style file
+% (Automatically used from Cactus distribution, if you have a
+%  thorn without the Cactus Flesh download this from the Cactus
+%  homepage at www.cactuscode.org)
+\usepackage{../../../../doc/latex/cactus}
+\usepackage{xspace}
+\newcommand{\nrpyell}{\texttt{NRPyEllipticET}\xspace}
+
+\begin{document}
+
+% The author of the documentation
+\author{Leo~R.~Werneck \textless wernecklr@gmail.com\textgreater, \\
+  Thiago~Assumpção \textless assumpcaothiago@gmail.com\textgreater,\\
+  Zach~Etienne \textless zachetie@gmail.com\textgreater,\\
+  Terrence~Pierre~Jacques \textless tp0052@mix.wvu.edu\textgreater}
+
+% The title of the document (not necessarily the name of the Thorn)
+\title{\nrpyell}
+
+% the date your document was last changed, if your document is in CVS,
+% please use:
+%    \date{$ $Date: 2004-01-07 12:12:39 -0800 (Wed, 07 Jan 2004) $ $}
+\date{August, 2022}
+
+\maketitle
+
+% Do not delete next line
+% START CACTUS THORNGUIDE
+
+% Add all definitions used in this documentation here
+%   \def\mydef etc
+
+\begin{abstract}
+  \noindent This thorn generates numerical relativity initial data
+  by solving the constraints of general relativity using the
+  hyperbolic relaxation method.
+\end{abstract}
+
+
+\section{Introduction}
+
+The hyperbolic relaxation method of~\cite{ruter:2018} converts an elliptic
+problem into a hyperbolic one. The prototypical elliptic problem---Poisson's
+equation---reads
+%%
+\begin{equation}
+  \nabla^{2}\vec{u} = \vec{\rho}\;,
+\end{equation}
+%%
+where $\vec{u}$ is a set of unknowns and $\vec{\rho}$ are sources. One introduces
+a \emph{relaxation} time $t$ and replaces this elliptic equation with
+%%
+\begin{equation}
+  \partial_{t}^{2}\vec{u} + \eta\partial_{t}\vec{u} = c^{2}\left(\nabla^{2}\vec{u} - \vec{\rho}\right)\;,
+\end{equation}
+%%
+where $\eta$ is a damping parameter with units of inverse time and $c$ is
+the speed of the relaxation waves. One then evolves this hyperbolic equation
+until a steady state is reached at $t=t_{\star}$, for which
+%%
+\begin{equation}
+  \left.\partial_{t}^{2}\vec{u}\right|_{t=t_{\star}} = 0 = \left.\partial_{t}\vec{u}\right|_{t=t_{\star}}\;,
+\end{equation}
+%%
+and thus $\left.\vec{u}\right|_{t=t_{\star}}$ is also a solution to the original
+elliptic problem. For more details of how this method is implemented in \nrpyell,
+please see~\cite{assumpcao:2022}.
+
+
+\section{Initial data types}
+\subsection{Conformally flat binary black hole initial data}
+
+As described in~\cite{assumpcao:2022}, \nrpyell solves the Hamiltonian
+constraint using the conformal transverse-traceless (CTT) decomposition, i.e.,
+%%
+\begin{equation}
+  \hat\nabla^{2}u + \frac{1}{8}\tilde{A}_{ij}\tilde{A}^{ij}\left(\psi_{\rm singular}+u\right)^{-7} = 0\;,
+\end{equation}
+%%
+where $\hat\nabla_{i}$ is the covariant derivative compatible with the flat
+spatial metric $\hat\gamma_{ij}$, $\hat\nabla^{2} = \hat\nabla_{i}\hat\nabla^{i}$,
+$\tilde{A}_{ij} = \psi^{-4}A_{ij}$, where $A_{ij}$ is the traceless part of the
+extrinsic curvature, and $\psi$ is the conformal factor, given by
+%%
+\begin{equation}
+  \psi = \psi_{\rm singular} + u \equiv 1 + \sum_{n=1}^{N_{p}}\frac{m_{n}}{2|\vec{x}_{n}|} + u\;,
+\end{equation}
+%%
+where $m_{n}$ are $\vec{x}_{n}$ are the bare mass and position vector of the
+$n$\textsuperscript{th} puncture and $u$ is a to-be-determined non-singular
+piece of the conformal factor.
+
+We thus solve the Hamiltonian constraint using the hyperbolic relaxation method,
+i.e.,
+%%
+\begin{align}
+  \partial_{t}u &= v - \eta u\;,\\
+  \partial_{t}v &= c^{2}\left[\hat{\nabla}^{2}u + \frac{1}{8}\tilde{A}_{ij}\tilde{A}^{ij}\left(\psi_{\rm singular} + u\right)\right]\;,
+\end{align}
+%%
+where the first equation defines $v$.
+
+\begin{thebibliography}{9}
+  \bibitem{ruter:2018} Rüter,~H.~R., Hildich,~D., Bugner,~M., and Brügmann,~B., Phys. Rev. D \textbf{98}, 084044, 2018 (arXiv: \href{https://arxiv.org/abs/1708.07358}{1708.07358}).
+  \bibitem{assumpcao:2022} Assumpção,~T., Werneck,~L.~R., Etienne,~Z.~B., and Pierre Jacques,~T., Phys. Rev. D \textbf{105}, 104037, 2022 (arXiv: \href{https://arxiv.org/abs/2111.02424}{2111.02424}).
+\end{thebibliography}
+
+% Do not delete next line
+% END CACTUS THORNGUIDE
+
+\end{document}
