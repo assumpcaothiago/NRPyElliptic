@@ -10,4 +10,7 @@
 implements: NRPyEllipticET
 inherits: ADMBase Grid
 
-CCTK_REAL uuGF TYPE=gf tags='prolongation="none"'
+CCTK_REAL NRPyEllipticET_relaxation_vars TYPE=gf tags='prolongation="none"'
+{
+  uuGF
+} "These are the variables NRPyEllipticET solves for. E.g., for conformally flat BBH, uuGF is the nonsingular part of the conformal factor."
