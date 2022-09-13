@@ -151,8 +151,13 @@ CCTK_REAL CFL_FACTOR "CFL factor of the relaxation time evolution."
 
 CCTK_INT max_iterations "Maximum number of time steps in the relaxation time evolution."
 {
-  0:* :: "Must be positive."
+  0:* :: "Must be positive"
 } 10000
+
+CCTK_REAL residual_integration_radius "The L2-norm of the residual is integrated in a sphere with this radius."
+{
+  0:* :: "Must be positive; if set to >=domain_size then will integrate over the entire NRPy+-generated grid."
+} 100.0
 
 ############################################
 # Conformally flat puncture BBH parameters #
