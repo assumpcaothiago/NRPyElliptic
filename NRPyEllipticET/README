@@ -1,0 +1,12 @@
+NRPy+-generated Cactus Thorn NRPyEllipticET
+Author(s)    : Leo Werneck, Thiago Assumpção, Terrence Pierre Jacques, and Zach Etienne
+Maintainer(s): Leo Werneck
+Licence      : BSD 2-Clause "Simplified" License
+--------------------------------------------------------------------------
+
+1. Purpose
+
+This thorn provides compact object initial data for
+numerical relativity. Currently supported initial
+data types:
+  - Conformally flat binary black holes
