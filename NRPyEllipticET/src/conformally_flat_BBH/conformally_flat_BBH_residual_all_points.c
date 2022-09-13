@@ -8,7 +8,6 @@ void conformally_flat_BBH_residual_all_points(const paramstruct *restrict params
 
   #pragma omp parallel for
   for (int i2 = NGHOSTS; i2 < NGHOSTS+Nxx2; i2++) {
-    #include "rfm_files/conformally_flat_BBH_rfm_struct__read2.h"
     for (int i1 = NGHOSTS; i1 < NGHOSTS+Nxx1; i1++) {
       #include "rfm_files/conformally_flat_BBH_rfm_struct__read1.h"
       for (int i0 = NGHOSTS; i0 < NGHOSTS+Nxx0; i0++) {
