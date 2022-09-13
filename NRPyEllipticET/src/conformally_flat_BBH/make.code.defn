@@ -20,7 +20,6 @@ SRCS = NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation.c \
        conformally_flat_BBH_MoL_malloc_non_y_n_gfs.c \
        conformally_flat_BBH_MoL_malloc_y_n_gfs.c \
        conformally_flat_BBH_MoL_step_forward_in_time.c \
-       conformally_flat_BBH_apply_bcs_curvilinear_radiation.c \
        conformally_flat_BBH_auxevol_gfs_all_points.c \
        conformally_flat_BBH_compute_ADM_Cartesian_quantities_from_uu.c \
        conformally_flat_BBH_driver_bcstruct.c \

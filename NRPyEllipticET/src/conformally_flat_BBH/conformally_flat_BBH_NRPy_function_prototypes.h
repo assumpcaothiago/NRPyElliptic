@@ -11,9 +11,6 @@ void conformally_flat_BBH_driver_bcstruct(const paramstruct *restrict params, bc
 void conformally_flat_BBH_freemem_bcstruct(const paramstruct *restrict params, const bc_struct *restrict bcstruct);
 void conformally_flat_BBH_set_up__bc_gz_map_and_parity_condns(const paramstruct *restrict params,
                                                               REAL *restrict xx[3], gz_map *restrict bc_gz_map,parity_condition *restrict bc_parity_conditions);
-void conformally_flat_BBH_apply_bcs_curvilinear_radiation(const paramstruct *restrict params, const bc_struct *restrict bcstruct,
-                                                          const int NUM_GFS, const int8_t *restrict gfs_parity, REAL *restrict xx[3],
-                                                          REAL *restrict gfs, REAL *restrict gfs_rhss);
 REAL conformally_flat_BBH_find_timestep(const paramstruct *restrict params, REAL *restrict xx[3], const REAL CFL_FACTOR);
 void conformally_flat_BBH_xx_to_Cart(const paramstruct *restrict params, REAL *restrict xx[3],const int i0,const int i1,const int i2, REAL xCart[3]);
 void conformally_flat_BBH_set_Nxx_dxx_invdx_params__and__xx(const int EigenCoord, const int Nxx[3],paramstruct *restrict params, REAL *restrict xx[3]);
