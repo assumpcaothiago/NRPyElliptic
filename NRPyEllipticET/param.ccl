@@ -54,7 +54,7 @@ BOOLEAN verbose "Whether or not to print information as the relaxation progresse
 {
 } no
 
-CCTK_INT info_output_freq "Frequency with which information is output"
+CCTK_INT info_output_freq "Print progress of relaxation time evolution every info_output_freq iterations"
 {
   0:* :: "Any positive value. 0 disables it"
 } 0
@@ -63,10 +63,6 @@ CCTK_REAL lapse_exponent_n "Exponent of lapse initial data alpha = psi^{n}"
 {
   *:* :: "This parameter can have any value"
 } -2
-
-BOOLEAN initialize_offdiagonal_metric_to_zero "Whether or not to initialize off-diagonal components to zero"
-{
-} yes
 
 CCTK_STRING interpolator_name "Interpolator name"
 {
@@ -107,7 +103,6 @@ CCTK_INT N1 "Number of points in the xx1 direction"
 CCTK_INT N2 "Number of points in the xx2 direction"
 {
   0:* :: "Must be positive"
-  -1 :: "Forbidden value to make sure it is explicitly set in the parfile"
 } 16
 
 CCTK_REAL domain_size "Domain size for the initial data"
