@@ -197,9 +197,8 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
                                                griddata.gridfuncs.y_n_gfs, griddata.gridfuncs.diagnostic_output_gfs);
 
       const int residual_gf_index   = UUGF;
-      const REAL integration_radius = 100.0;
-      const REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf(&griddata.params, residual_gf_index, integration_radius, griddata.xx,
-                                                                             griddata.gridfuncs.diagnostic_output_gfs);
+      const REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf(&griddata.params, residual_gf_index, residual_integration_radius,
+                                                                           griddata.xx, griddata.gridfuncs.diagnostic_output_gfs);
       if( verbose && info_output_freq > 0 ) {
         // Step 7.d.ii: Compute time elapsed during the executation of this thorn
         clock_gettime(CLOCK_REALTIME, &end);
