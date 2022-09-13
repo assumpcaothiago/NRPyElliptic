@@ -8,7 +8,7 @@
 # Tutorial-ETK_thorn-NRPyEllipticET.ipynb
 
 STORAGE: ADMBase::metric[metric_timelevels],ADMBase::curv[metric_timelevels],ADMBase::lapse[lapse_timelevels],ADMBase::shift[shift_timelevels]
-STORAGE: NRPyEllipticET::uuGF
+STORAGE: NRPyEllipticET::NRPyEllipticET_relaxation_vars
 
 schedule NRPyEllipticET IN ADMBase_InitialData
 {
