@@ -41,5 +41,5 @@ REAL conformally_flat_BBH_find_timestep(const paramstruct *restrict params, REAL
       } // END LOOP: for (int i0 = NGHOSTS; i0 < NGHOSTS+Nxx0; i0++)
     } // END LOOP: for (int i1 = NGHOSTS; i1 < NGHOSTS+Nxx1; i1++)
   } // END LOOP: for (int i2 = NGHOSTS; i2 < NGHOSTS+Nxx2; i2++)
-    return dsmin/1.0;
+  return dsmin*CFL_FACTOR/1.0;
 }
