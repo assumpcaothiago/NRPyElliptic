@@ -57,10 +57,6 @@ void NRPyEllipticET_conformally_flat_BBH_interpolate_solution_to_ADMBase( const 
   }
   else {
     ierr = Util_TableDestroy(param_table_handle);
-    if (ierr != 0) {
-      CCTK_WARN(1,"Could not destroy table");
-      exit(1);
-    }
+    if(ierr != 0) CCTK_WARN(CCTK_WARN_ABORT,"Could not destroy table");
   }
-
 }

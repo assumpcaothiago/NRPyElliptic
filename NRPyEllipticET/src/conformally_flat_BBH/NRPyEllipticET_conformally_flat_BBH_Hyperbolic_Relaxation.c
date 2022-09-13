@@ -26,9 +26,8 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
   // Step 0.a: Check grid parameters
   const int Nxx[3] = { N0,N1,N2 };
   if(Nxx[0]%2 != 0 || Nxx[1]%2 != 0 || Nxx[2]%2 != 0) {
-    printf("Error: Cannot guarantee a proper cell-centered grid if number of grid cells not set to even number.\n");
-    printf("       For example, in case of angular directions, proper symmetry zones will not exist.\n");
-    exit(1);
+    CCTK_ERROR("Cannot guarantee a proper cell-centered grid if number of grid cells not set to even number."
+               " For example, in case of angular directions, proper symmetry zones will not exist.");
   }
 
   // Step 0.b: Print parameter information
@@ -118,9 +117,8 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
   //              This is a limitation of the RK method. You are always welcome to declare & allocate
   //              additional gridfunctions by hand.
   if(NUM_AUX_GFS > NUM_EVOL_GFS) {
-    printf("Error: NUM_AUX_GFS > NUM_EVOL_GFS. Either reduce the number of auxiliary gridfunctions,\n");
-    printf("       or allocate (malloc) by hand storage for *diagnostic_output_gfs. \n");
-    exit(1);
+    CCTK_ERROR("NUM_AUX_GFS > NUM_EVOL_GFS. Either reduce the number of auxiliary gridfunctions,"
+               " or allocate (malloc) by hand storage for *diagnostic_output_gfs.");
   }
 
   // Step 0.m: Declare struct for gridfunctions and allocate memory for y_n_gfs gridfunctions

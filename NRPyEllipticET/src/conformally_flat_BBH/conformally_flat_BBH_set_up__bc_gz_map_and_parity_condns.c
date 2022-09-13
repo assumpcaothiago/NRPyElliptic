@@ -99,13 +99,12 @@ void conformally_flat_BBH_set_up__bc_gz_map_and_parity_condns(const paramstruct 
     if(fabs( (double)(xCart_orig[0] - xCart[0]) ) > EPS_ABS ||
        fabs( (double)(xCart_orig[1] - xCart[1]) ) > EPS_ABS ||
        fabs( (double)(xCart_orig[2] - xCart[2]) ) > EPS_ABS) {
-       fprintf(stderr,"Error. SinhSymTP: Cartesian disagreement: ( %.15e %.15e %.15e ) != ( %.15e %.15e %.15e ) | xx: %e %e %e -> %e %e %e | %d %d %d\n",
-               (double)xCart_orig[0],(double)xCart_orig[1],(double)xCart_orig[2],
-               (double)xCart[0],(double)xCart[1],(double)xCart[2],
-               xx[0][i0],xx[1][i1],xx[2][i2],
-               xx[0][i0_inbounds],xx[1][i1_inbounds],xx[2][i2_inbounds],
-               Nxx_plus_2NGHOSTS0,Nxx_plus_2NGHOSTS1,Nxx_plus_2NGHOSTS2);
-      exit(1);
+      CCTK_VERROR("SinhSymTP: Cartesian disagreement: ( %.15e %.15e %.15e ) != ( %.15e %.15e %.15e ) | xx: %e %e %e -> %e %e %e | %d %d %d",
+                  (double)xCart_orig[0],(double)xCart_orig[1],(double)xCart_orig[2],
+                  (double)xCart[0],(double)xCart[1],(double)xCart[2],
+                  xx[0][i0],xx[1][i1],xx[2][i2],
+                  xx[0][i0_inbounds],xx[1][i1_inbounds],xx[2][i2_inbounds],
+                  Nxx_plus_2NGHOSTS0,Nxx_plus_2NGHOSTS1,Nxx_plus_2NGHOSTS2);
     }
 
     // Step 3: Set bc_gz_map and bc_parity_conditions.
@@ -199,11 +198,10 @@ void conformally_flat_BBH_set_up__bc_gz_map_and_parity_condns(const paramstruct 
           // Perform sanity check on parity array output: should be +1 or -1 to within 8 significant digits:
           if( (REAL_parity_array[whichparity]  > 0 && fabs(REAL_parity_array[whichparity] - (+1)) > 1e-8) ||
               (REAL_parity_array[whichparity] <= 0 && fabs(REAL_parity_array[whichparity] - (-1)) > 1e-8) ) {
-              fprintf(stderr,"Error at point (%d %d %d); (%e %e %e); maps to (%e %e %e).\n",
-                      i0,i1,i2, xx0,xx1,xx2, xx0_inbounds,xx1_inbounds,xx2_inbounds);
-              fprintf(stderr,"Parity evaluated to %e , which is not within 8 significant digits of +1 or -1.\n",
-                      REAL_parity_array[whichparity]);
-              exit(1);
+              CCTK_VERROR("Error at point (%d %d %d); (%e %e %e); maps to (%e %e %e)."
+                          " Parity evaluated to %e, which is not within 8 significant digits of +1 or -1.",
+                          i0,i1,i2, xx0,xx1,xx2, xx0_inbounds,xx1_inbounds,xx2_inbounds,
+                          REAL_parity_array[whichparity]);
           }
           if(REAL_parity_array[whichparity] < 0.0) bc_parity_conditions[IDX3S(i0,i1,i2)].parity[whichparity] = -1;
           if(REAL_parity_array[whichparity] > 0.0) bc_parity_conditions[IDX3S(i0,i1,i2)].parity[whichparity] = +1;
