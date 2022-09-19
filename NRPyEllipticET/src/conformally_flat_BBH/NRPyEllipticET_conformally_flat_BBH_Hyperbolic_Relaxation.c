@@ -175,8 +175,7 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
 
   // Step 7: Relaxation time loop
   // Step 7.a: Start timing for NRPyEllipticET
-  struct timespec start, end;
-  clock_gettime(CLOCK_REALTIME, &start);
+  const clock_t start = clock();
 
   // Step 7.b: Set frequency with which the L2-norm of residual is computed
   int output_l2_norm_residual_every_N = info_output_freq; //= (int)((REAL)N_final/1000.0);
@@ -201,9 +200,8 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
                                                                            griddata.xx, griddata.gridfuncs.diagnostic_output_gfs);
       if( verbose && info_output_freq > 0 ) {
         // Step 7.d.ii: Compute time elapsed during the executation of this thorn
-        clock_gettime(CLOCK_REALTIME, &end);
-        long long unsigned int time_elapsed_ns = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-        REAL time_elapsed_s = (REAL)time_elapsed_ns*1e-9;
+        const clock_t end = clock();
+        REAL time_elapsed_s = (end-start)/((REAL)CLOCKS_PER_SEC);
 
         // Step 7.d.iii: Compute percentage of the run that has completed
         REAL completion = ((REAL)n)/((REAL)N_final);
@@ -244,9 +242,8 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
   }
 
   // Step 10: Print final information about the run
-  clock_gettime(CLOCK_REALTIME, &end);
-  const long long unsigned int time_in_ns = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-  CCTK_VINFO("Total execution time: %.0lf s", ((REAL) time_in_ns )*1.0e-9);
+  const clock_t end = clock();
+  CCTK_VINFO("Total execution time: %.0lf s", (end-start)/((REAL)CLOCKS_PER_SEC));
 
   // Step 11: Free all allocated memory
   conformally_flat_BBH_rfm_precompute_rfmstruct_freemem(&griddata.params, &griddata.rfmstruct);
