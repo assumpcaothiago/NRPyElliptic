@@ -1,0 +1,105 @@
+ActiveThorns = "
+    ADMBase
+    AEILocalInterp
+    Boundary
+    Cactus
+    Carpet
+    CarpetIOASCII
+    CartGrid3D
+    IOUtil
+    MoL
+    NRPyEllipticET
+    SymBase
+"
+
+# Parameters of thorn ADMBase (implementing ADMBase)
+ADMBase::evolution_method         = "static"
+ADMBase::shift_evolution_method   = "static"
+ADMBase::lapse_evolution_method   = "static"
+ADMBase::dtlapse_evolution_method = "static"
+ADMBase::dtshift_evolution_method = "static"
+ADMBase::initial_data             = "NRPyEllipticET"
+ADMBase::initial_lapse            = "NRPyEllipticET-averaged"
+ADMBase::initial_shift            = "zero"
+ADMBase::initial_dtlapse          = "zero"
+ADMBase::initial_dtshift          = "zero"
+ADMBase::lapse_timelevels         = 1
+ADMBase::metric_timelevels        = 1
+ADMBase::shift_timelevels         = 1
+ADMBase::metric_type              = "physical"
+
+# Parameters of thorn Cactus (implementing Cactus)
+Cactus::cctk_run_title             = "NRPyEllipticET_test"
+Cactus::cctk_itlast                = 0
+Cactus::cctk_full_warnings         = "yes"
+Cactus::highlight_warning_messages = "no"
+
+# Parameters of thorn Carpet (implementing Driver)
+Carpet::convergence_level        = 0
+Carpet::ghost_size               = 1
+Carpet::max_refinement_levels    = 1
+Carpet::prolongation_order_space = 5
+Carpet::prolongation_order_time  = 2
+Carpet::verbose                  = "no"
+Carpet::storage_verbose          = "no"
+Carpet::init_3_timelevels        = "no"
+Carpet::schedule_barriers        = "no"
+Carpet::poison_new_timelevels    = "yes"
+Carpet::use_buffer_zones         = "yes"
+Carpet::init_fill_timelevels     = "yes"
+Carpet::domain_from_coordbase    = "yes"
+
+# Parameters of thorn CarpetIOASCII (implementing IOASCII)
+CarpetIOASCII::compact_format      = "yes"
+CarpetIOASCII::output_ghost_points = "no"
+CarpetIOASCII::one_file_per_group  = "no"
+CarpetIOASCII::out1D_y             = "no"
+CarpetIOASCII::out1D_z             = "no"
+CarpetIOASCII::out1D_d             = "no"
+CarpetIOASCII::out1D_every         = 1
+CarpetIOASCII::out1D_vars          = "NRPyEllipticET::uuGF"
+
+# Parameters of thorn CartGrid3D (implementing grid)
+CartGrid3D::type = "CoordBase"
+
+# Parameters of thorn CoordBase (implementing CoordBase)
+CoordBase::domainsize = "minmax"
+CoordBase::dx         = 0.25
+CoordBase::dy         = CoordBase::dx
+CoordBase::dz         = CoordBase::dx
+CoordBase::xmax       = 10
+CoordBase::xmin       =-CoordBase::xmax
+CoordBase::ymax       = CoordBase::xmax
+CoordBase::ymin       =-CoordBase::xmax
+CoordBase::zmax       = CoordBase::xmax
+CoordBase::zmin       =-CoordBase::xmax
+
+# Parameters of thorn IOUtil (implementing IO)
+IOUtil::out_fileinfo  = "none"
+IOUtil::parfile_write = "no"
+IOUtil::out_dir       = $parfile
+
+# Parameters of thorn NRPyEllipticET (implementing NRPyEllipticET)
+NRPyEllipticET::interpolator_name                         = "Hermite polynomial interpolation"
+NRPyEllipticET::interpolation_order                       = 3
+NRPyEllipticET::N0                                        = 64
+NRPyEllipticET::N1                                        = 64
+NRPyEllipticET::N2                                        = 16
+NRPyEllipticET::domain_size                               = 1e6
+NRPyEllipticET::sinh_width                                = 0.07
+NRPyEllipticET::eta_damping                               = 12.5
+NRPyEllipticET::number_of_LCT                             = 5.5e-6
+NRPyEllipticET::log_target_residual                       = -12
+NRPyEllipticET::NRPy_epsilon                              = 1e-6
+NRPyEllipticET::foci_position                             = +5.0
+NRPyEllipticET::position_shift[0]                         = -0.5384615384615383
+NRPyEllipticET::conformally_flat_BBH_puncture_0_bare_mass = 0.51841937253070269
+NRPyEllipticET::conformally_flat_BBH_puncture_1_bare_mass = 0.39192387717971311
+NRPyEllipticET::conformally_flat_BBH_puncture_0_pos[0]    = +NRPyEllipticET::foci_position
+NRPyEllipticET::conformally_flat_BBH_puncture_1_pos[0]    = -NRPyEllipticET::foci_position
+NRPyEllipticET::conformally_flat_BBH_puncture_0_P[0]      = -0.00084541526517121
+NRPyEllipticET::conformally_flat_BBH_puncture_0_P[1]      = +0.09530152296974252
+NRPyEllipticET::conformally_flat_BBH_puncture_1_P[0]      = +0.00084541526517121
+NRPyEllipticET::conformally_flat_BBH_puncture_1_P[1]      = -0.09530152296974252
+NRPyEllipticET::conformally_flat_BBH_puncture_0_S[2]      = +0.09509112426035504
+NRPyEllipticET::conformally_flat_BBH_puncture_1_S[2]      = -0.09156449704142013

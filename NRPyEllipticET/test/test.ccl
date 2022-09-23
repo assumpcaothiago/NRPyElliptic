@@ -1,0 +1,8 @@
+# Script for creating default test.ccl file:
+# for i in `ls -1 *.par|sed "s/.par//g"`;do echo "TEST " $i; echo "{";echo "  NPROCS 2"; echo "}"; echo "";done
+
+TEST  NRPyEllipticET_test
+{
+  ABSTOL 4e-6 # GCC vs ICC: maximum absolute error in column 9 2.018840419004686e-07
+  RELTOL 2e-5 # GCC vs ICC: maximum relative error in column 9 8.355016367866952e-06
+}
