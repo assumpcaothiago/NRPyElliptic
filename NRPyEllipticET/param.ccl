@@ -165,14 +165,12 @@ CCTK_REAL residual_integration_radius "The L2-norm of the residual is integrated
 CCTK_REAL conformally_flat_BBH_puncture_0_bare_mass "Bare mass of first puncture"
 {
   0:* :: "Must be positive"
-  1e123 :: "Forbidden value to make sure it is explicitly set in the parfile"
-} 1e123
+} 0.5
 
 CCTK_REAL conformally_flat_BBH_puncture_1_bare_mass "Bare mass of second puncture"
 {
   0:* :: "Must be positive"
-  1e123 :: "Forbidden value to make sure it is explicitly set in the parfile"
-} 1e123
+} 0.5
 
 CCTK_REAL conformally_flat_BBH_puncture_0_pos[3] "Position of first puncture"
 {
