@@ -1000,6 +1000,20 @@ def basis_transform_tensorDD_from_Cartesian_to_rfmbasis(Jac_dUCart_dDrfmUD, Cart
                 for m in range(3):
                     rfm_dst_tensorDD[i][j] += Jac_dUCart_dDrfmUD[l][i]*Jac_dUCart_dDrfmUD[m][j]*Cart_src_tensorDD[l][m]
     return rfm_dst_tensorDD
+
+def basis_transform_tensorDDD_from_Cartesian_to_rfmbasis(Jac_dUCart_dDrfmUD, Cart_src_tensorDDD):
+    rfm_dst_tensorDDD = ixp.zerorank3()
+    for i1 in range(3):
+        for i2 in range(3):
+            for i3 in range(3):
+                for j1 in range(3):
+                    for j2 in range(3):
+                        for j3 in range(3):
+                            rfm_dst_tensorDDD[i1][i2][i3] += (Jac_dUCart_dDrfmUD[j1][i1]
+                                                             *Jac_dUCart_dDrfmUD[j2][i2]
+                                                             *Jac_dUCart_dDrfmUD[j3][i3]
+                                                             *Cart_src_tensorDDD[j1][j2][j3])
+    return rfm_dst_tensorDDD
 ##################################################
 
 def get_EigenCoord():
