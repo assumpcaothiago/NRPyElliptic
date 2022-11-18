@@ -1,6 +1,5 @@
 #include "./NRPy_basic_defines.h"
 #include "./NRPy_function_prototypes.h"
-#include "apply_bcs_sommerfeld.h"
 #include "./SIMD/SIMD_intrinsics.h"
 /*
  * Method of Lines (MoL) for "RK4" method: Step forward one full timestep.
@@ -24,7 +23,13 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     const int Nxx_plus_2NGHOSTS0 = griddata->params.Nxx_plus_2NGHOSTS0;
     const int Nxx_plus_2NGHOSTS1 = griddata->params.Nxx_plus_2NGHOSTS1;
     const int Nxx_plus_2NGHOSTS2 = griddata->params.Nxx_plus_2NGHOSTS2;
-    rhs_eval(params, rfmstruct, auxevol_gfs, y_n_gfs, k_odd_gfs);apply_bcs_sommerfeld(params, griddata->xx, bcstruct, NUM_EVOL_GFS, evol_gf_parity, y_n_gfs, k_odd_gfs);
+    rhs_eval(params, rfmstruct, auxevol_gfs, y_n_gfs, k_odd_gfs);
+    if(params->outer_bc_type == RADIATION_OUTER_BCS){
+      const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = {griddata->params.uu_wavespeed_at_OB, griddata->params.vv_wavespeed_at_OB};
+      apply_bcs_outerradiation_and_inner(params, bcstruct, griddata->xx,
+                                         gridfunctions_wavespeed,gridfunctions_f_infinity,
+                                         y_n_gfs, k_odd_gfs);
+    }
 #pragma omp parallel for
     for(int i=0;i<Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2*NUM_EVOL_GFS;i+=SIMD_width) {
       const REAL_SIMD_ARRAY k_odd_gfsL = ReadSIMD(&k_odd_gfs[i]);
@@ -41,6 +46,8 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     WriteSIMD(&y_nplus1_running_total_gfs[i], __RHS_exp_0);
     WriteSIMD(&k_odd_gfs[i], __RHS_exp_1);
     }
+    if(params->outer_bc_type == EXTRAPOLATION_OUTER_BCS)
+      apply_bcs_outerextrap_and_inner(params, bcstruct, k_odd_gfs);
   }
   // -={ END k1 substep }=-
 
@@ -59,7 +66,13 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     const int Nxx_plus_2NGHOSTS0 = griddata->params.Nxx_plus_2NGHOSTS0;
     const int Nxx_plus_2NGHOSTS1 = griddata->params.Nxx_plus_2NGHOSTS1;
     const int Nxx_plus_2NGHOSTS2 = griddata->params.Nxx_plus_2NGHOSTS2;
-    rhs_eval(params, rfmstruct, auxevol_gfs, k_odd_gfs, k_even_gfs);apply_bcs_sommerfeld(params, griddata->xx, bcstruct, NUM_EVOL_GFS, evol_gf_parity, k_odd_gfs, k_even_gfs);
+    rhs_eval(params, rfmstruct, auxevol_gfs, k_odd_gfs, k_even_gfs);
+    if(params->outer_bc_type == RADIATION_OUTER_BCS){
+      const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = {griddata->params.uu_wavespeed_at_OB, griddata->params.vv_wavespeed_at_OB};
+      apply_bcs_outerradiation_and_inner(params, bcstruct, griddata->xx,
+                                         gridfunctions_wavespeed,gridfunctions_f_infinity,
+                                         k_odd_gfs, k_even_gfs);
+    }
 #pragma omp parallel for
     for(int i=0;i<Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2*NUM_EVOL_GFS;i+=SIMD_width) {
       const REAL_SIMD_ARRAY k_even_gfsL = ReadSIMD(&k_even_gfs[i]);
@@ -77,6 +90,8 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     WriteSIMD(&y_nplus1_running_total_gfs[i], __RHS_exp_0);
     WriteSIMD(&k_even_gfs[i], __RHS_exp_1);
     }
+    if(params->outer_bc_type == EXTRAPOLATION_OUTER_BCS)
+      apply_bcs_outerextrap_and_inner(params, bcstruct, k_even_gfs);
   }
   // -={ END k2 substep }=-
 
@@ -95,7 +110,13 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     const int Nxx_plus_2NGHOSTS0 = griddata->params.Nxx_plus_2NGHOSTS0;
     const int Nxx_plus_2NGHOSTS1 = griddata->params.Nxx_plus_2NGHOSTS1;
     const int Nxx_plus_2NGHOSTS2 = griddata->params.Nxx_plus_2NGHOSTS2;
-    rhs_eval(params, rfmstruct, auxevol_gfs, k_even_gfs, k_odd_gfs);apply_bcs_sommerfeld(params, griddata->xx, bcstruct, NUM_EVOL_GFS, evol_gf_parity, k_even_gfs, k_odd_gfs);
+    rhs_eval(params, rfmstruct, auxevol_gfs, k_even_gfs, k_odd_gfs);
+    if(params->outer_bc_type == RADIATION_OUTER_BCS){
+      const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = {griddata->params.uu_wavespeed_at_OB, griddata->params.vv_wavespeed_at_OB};
+      apply_bcs_outerradiation_and_inner(params, bcstruct, griddata->xx,
+                                         gridfunctions_wavespeed,gridfunctions_f_infinity,
+                                         k_even_gfs, k_odd_gfs);
+    }
 #pragma omp parallel for
     for(int i=0;i<Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2*NUM_EVOL_GFS;i+=SIMD_width) {
       const REAL_SIMD_ARRAY k_odd_gfsL = ReadSIMD(&k_odd_gfs[i]);
@@ -110,6 +131,8 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     WriteSIMD(&y_nplus1_running_total_gfs[i], __RHS_exp_0);
     WriteSIMD(&k_odd_gfs[i], __RHS_exp_1);
     }
+    if(params->outer_bc_type == EXTRAPOLATION_OUTER_BCS)
+      apply_bcs_outerextrap_and_inner(params, bcstruct, k_odd_gfs);
   }
   // -={ END k3 substep }=-
 
@@ -128,7 +151,13 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
     const int Nxx_plus_2NGHOSTS0 = griddata->params.Nxx_plus_2NGHOSTS0;
     const int Nxx_plus_2NGHOSTS1 = griddata->params.Nxx_plus_2NGHOSTS1;
     const int Nxx_plus_2NGHOSTS2 = griddata->params.Nxx_plus_2NGHOSTS2;
-    rhs_eval(params, rfmstruct, auxevol_gfs, k_odd_gfs, k_even_gfs);apply_bcs_sommerfeld(params, griddata->xx, bcstruct, NUM_EVOL_GFS, evol_gf_parity, k_odd_gfs, k_even_gfs);
+    rhs_eval(params, rfmstruct, auxevol_gfs, k_odd_gfs, k_even_gfs);
+    if(params->outer_bc_type == RADIATION_OUTER_BCS){
+      const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = {griddata->params.uu_wavespeed_at_OB, griddata->params.vv_wavespeed_at_OB};
+      apply_bcs_outerradiation_and_inner(params, bcstruct, griddata->xx,
+                                         gridfunctions_wavespeed,gridfunctions_f_infinity,
+                                         k_odd_gfs, k_even_gfs);
+    }
 #pragma omp parallel for
     for(int i=0;i<Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2*NUM_EVOL_GFS;i+=SIMD_width) {
       const REAL_SIMD_ARRAY k_even_gfsL = ReadSIMD(&k_even_gfs[i]);
@@ -141,6 +170,8 @@ void MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt)
         const REAL_SIMD_ARRAY __RHS_exp_0 = AddSIMD(y_n_gfsL, FusedMulAddSIMD(_Rational_1_6, MulSIMD(DT, k_even_gfsL), y_nplus1_running_total_gfsL));
     WriteSIMD(&y_n_gfs[i], __RHS_exp_0);
     }
+    if(params->outer_bc_type == EXTRAPOLATION_OUTER_BCS)
+      apply_bcs_outerextrap_and_inner(params, bcstruct, y_n_gfs);
   }
   // -={ END k4 substep }=-
 

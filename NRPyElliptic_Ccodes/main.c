@@ -11,11 +11,11 @@
  */
 int main(int argc, const char *argv[]) {
 
-
   griddata_struct griddata;
   set_Cparameters_to_default(&griddata.params);
+  griddata.params.outer_bc_type = RADIATION_OUTER_BCS;
 
-  // Step 0a: Read command-line input, error out if nonconformant
+  // Step 0a:: Read command-line input, error out if nonconformant
   if(argc != 5 || atoi(argv[1]) < NGHOSTS || atoi(argv[2]) < NGHOSTS || atoi(argv[3]) < NGHOSTS) {
     printf("Error: Expected four command-line arguments: ./NRPyElliptic_Playground Nx0 Nx1 Nx2 N_final,\n");
     printf("where Nx[0,1,2] is the number of grid points in the 0, 1, and 2 directions,\n");
@@ -37,24 +37,25 @@ int main(int argc, const char *argv[]) {
 
   // Step 0d: Uniform coordinate grids are stored to *xx[3]
   // Step 0d.i: Set bcstruct
-  bc_struct bcstruct;
   {
-    int EigenCoord = 1;
-    // Step 0d.ii: Call set_Nxx_dxx_invdx_params__and__xx(), which sets
-    //             params Nxx,Nxx_plus_2NGHOSTS,dxx,invdx, and xx[] for the
-    //             chosen Eigen-CoordSystem.
+    int EigenCoord;
+
+    // Step 0d.ii: Set params Nxx,Nxx_plus_2NGHOSTS,dxx,invdx, and xx[] for the
+    //             Eigen-CoordSystem associated with the chosen CoordSystem;
+    //             e.g., CoordSystem=SinhSpherical -> EigenCoord=Spherical
+    EigenCoord = 1;
     set_Nxx_dxx_invdx_params__and__xx(EigenCoord, Nxx, &griddata.params, griddata.xx);
     // Step 0e: Find ghostzone mappings; set up bcstruct
-    driver_bcstruct(&griddata.params, &griddata.bcstruct, griddata.xx);
-    // Step 0e.i: Free allocated space for xx[][] array
+    bcstruct_set_up(&griddata.params, griddata.xx, &griddata.bcstruct);
+    // Step 0e.i: Free allocated space for xx[][] array, as it was
+    //            allocated in set_Nxx_dxx_invdx_params__and__xx()
     for(int i=0;i<3;i++) free(griddata.xx[i]);
-  }
 
-  // Step 0f: Call set_Nxx_dxx_invdx_params__and__xx(), which sets
-  //          params Nxx,Nxx_plus_2NGHOSTS,dxx,invdx, and xx[] for the
-  //          chosen (non-Eigen) CoordSystem.
-  int EigenCoord = 0;
-  set_Nxx_dxx_invdx_params__and__xx(EigenCoord, Nxx, &griddata.params, griddata.xx);
+    // Step 0f: Set params Nxx,Nxx_plus_2NGHOSTS,dxx,invdx, and xx[] for the
+    //          chosen (non-Eigen) CoordSystem.
+    EigenCoord = 0;
+    set_Nxx_dxx_invdx_params__and__xx(EigenCoord, Nxx, &griddata.params, griddata.xx);
+  }
 
   // Step 0g: Set timestep based on smallest proper distance between gridpoints and CFL factor
   REAL dt = find_timestep(&griddata.params, griddata.xx, CFL_FACTOR);
@@ -77,8 +78,6 @@ int main(int argc, const char *argv[]) {
 
   // Step 0k: Declare struct for gridfunctions and allocate memory for y_n_gfs gridfunctions
   MoL_malloc_y_n_gfs(&griddata.params, &griddata.gridfuncs);
-
-
   // Step 0l: Set up precomputed reference metric arrays
   // Step 0l.i: Allocate space for precomputed reference metric arrays.
   rfm_struct rfmstruct;
@@ -86,8 +85,6 @@ int main(int argc, const char *argv[]) {
 
   // Step 0l.ii: Define precomputed reference metric arrays.
   rfm_precompute_rfmstruct_define(&griddata.params, griddata.xx, &griddata.rfmstruct);
-
-
   // Step 1a: Set up initial guess:
   initial_guess_all_points(&griddata.params, griddata.xx, griddata.gridfuncs.y_n_gfs);
 
@@ -103,11 +100,13 @@ int main(int argc, const char *argv[]) {
   wavespeed_gf_all_points(&griddata.params, CFL_FACTOR, dt, griddata.xx, griddata.gridfuncs.auxevol_gfs);
   
   // Step 1.e: Set wavespeed at outer boundary (necessary for Sommerfeld BC)
-  update_evolgf_speed (&griddata.params, griddata.gridfuncs.auxevol_gfs, evolgf_speed); 
+  const REAL wavespeed_at_OB = compute_wavespeed_at_OB (&griddata.params, griddata.gridfuncs.auxevol_gfs);
+  griddata.params.uu_wavespeed_at_OB = wavespeed_at_OB;
+  griddata.params.vv_wavespeed_at_OB = wavespeed_at_OB;
                                                                 
-  for (int ii = 0; ii < NUM_EVOL_GFS; ii++){
-    printf("evolgf_speed[%d] = %.16e\n", ii, evolgf_speed[ii]);
-  }
+  // print wavespeeds for debugging
+  printf("griddata.params.uu_wavespeed_at_OB = %.16e\n", griddata.params.uu_wavespeed_at_OB);
+  printf("griddata.params.vv_wavespeed_at_OB = %.16e\n", griddata.params.vv_wavespeed_at_OB);
   
   // Step ?: Create output folders
   const int output_folder          = mkdir("./output_NRPyElliptic", 0777);
@@ -144,10 +143,8 @@ int main(int argc, const char *argv[]) {
     // Step 2: Diagnostics
       
     // Step 2.a: Compute residual and store it at diagnostic_output_gfs(UUFG)
-
     residual_all_points(&griddata.params, &griddata.rfmstruct, griddata.gridfuncs.auxevol_gfs,
                         griddata.gridfuncs.y_n_gfs, griddata.gridfuncs.diagnostic_output_gfs);
-
     // Step 2.b: compute and output L2-norm of residual
     const int residual_gf_index = UUGF;
     const REAL integration_radius = 100.;
@@ -194,12 +191,11 @@ int main(int argc, const char *argv[]) {
   gridfunction_z_axis(&griddata.params, UUGF, griddata.xx, griddata.gridfuncs.y_n_gfs, uu_final_1D_file);  
   fclose(uu_final_1D_file);
 
-  // Step 5: Free all allocated memory
-  rfm_precompute_rfmstruct_freemem(&griddata.params, &griddata.rfmstruct);
+  // Step 5: Free all allocated memory  rfm_precompute_rfmstruct_freemem(&griddata.params, &griddata.rfmstruct);
 
-  freemem_bcstruct(&griddata.params, &griddata.bcstruct);
+  free(griddata.bcstruct.inner_bc_array); // Free inner bc data
+  for(int ng=0;ng<NGHOSTS*3;ng++) free(griddata.bcstruct.pure_outer_bc_array[ng]); // Free outer bc data
   MoL_free_memory_y_n_gfs(&griddata.params, &griddata.gridfuncs);
   MoL_free_memory_non_y_n_gfs(&griddata.params, &griddata.gridfuncs);
   for(int i=0;i<3;i++) free(griddata.xx[i]);
-  return 0;
-}
+  return 0;}

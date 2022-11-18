@@ -18,7 +18,7 @@ griddata.params.AMAX   =  domain_size;
 
 
 // Free parameters related to punctures
-griddata.params.eta_damping = 11.0;
+griddata.params.eta_damping = 20.0;
 griddata.params.bare_mass_0 = 0.5184199353358704;
 griddata.params.bare_mass_1 = 0.39193567996522616;
 griddata.params.puncture_0_x = 0.0;

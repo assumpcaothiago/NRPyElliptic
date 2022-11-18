@@ -59,6 +59,8 @@ void set_Cparameters_to_default(paramstruct *restrict params) {
   params->AMAX = 10.0;  // reference_metric::AMAX
   params->eta_damping = 1.0;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::eta_damping
   params->time = 0.0;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::time
+  params->uu_wavespeed_at_OB = 1.0;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::uu_wavespeed_at_OB
+  params->vv_wavespeed_at_OB = 1.0;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::vv_wavespeed_at_OB
   params->bare_mass_0 = 1.0;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::bare_mass_0
   params->bare_mass_1 = 0.0;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::bare_mass_1
   params->puncture_0_x = 0.0;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::puncture_0_x
@@ -80,4 +82,5 @@ void set_Cparameters_to_default(paramstruct *restrict params) {
   params->S1_y = 0.0;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::S1_y
   params->S1_z = 0.0;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::S1_z
   params->has_outer_boundary = 0;  // CurviBoundaryConditions.CurviBoundaryConditions_new_way::has_outer_boundary
+  params->outer_bc_type = EXTRAPOLATION_OUTER_BCS;  // CurviBoundaryConditions.CurviBoundaryConditions_new_way::outer_bc_type
 }

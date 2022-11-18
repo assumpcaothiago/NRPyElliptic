@@ -98,6 +98,8 @@ typedef struct __paramstruct__ {
   REAL puncture_1_y;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::puncture_1_y
   REAL puncture_1_z;  // NRPyElliptic_codegen.NRPyElliptic_SourceTerm::puncture_1_z
   REAL time;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::time
+  REAL uu_wavespeed_at_OB;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::uu_wavespeed_at_OB
+  REAL vv_wavespeed_at_OB;  // NRPyElliptic_codegen.NRPyElliptic_RHSs::vv_wavespeed_at_OB
   REAL xx0;  // grid::xx0
   REAL xx1;  // grid::xx1
   REAL xx2;  // grid::xx2
@@ -114,6 +116,7 @@ typedef struct __paramstruct__ {
   int Nxx_plus_2NGHOSTS1;  // grid::Nxx_plus_2NGHOSTS1
   int Nxx_plus_2NGHOSTS2;  // grid::Nxx_plus_2NGHOSTS2
   int has_outer_boundary;  // CurviBoundaryConditions.CurviBoundaryConditions_new_way::has_outer_boundary
+  int outer_bc_type;  // CurviBoundaryConditions.CurviBoundaryConditions_new_way::outer_bc_type
 } paramstruct;
 //********************************************
 
@@ -154,49 +157,41 @@ typedef struct __rfmstruct__ {
 
 // NRPy+ Curvilinear Boundary Conditions: Core data structures
 // Documented in: Tutorial-Start_to_Finish-Curvilinear_BCs.ipynb
-typedef struct __ghostzone_map__ {
-  short i0,i1,i2; // i0,i1,i2 stores values from -1 (used to indicate outer boundary)
-                  // to Nxx_plus_2NGHOSTS*. We assume that grid extents beyond the
-                  // limits of short (i.e., beyond about 32,000) are unlikely. This
-                  // can be easily extended if needed, though.
-} gz_map;
 
-typedef struct __parity__ {
-  int8_t parity[10]; // We store the 10 parity conditions in 10 int8_t integers,
-                     // one for each condition. Note that these conditions can
-                     // only take one of two values: +1 or -1, hence the use of
-                     // int8_t, the smallest C data type.
-} parity_condition;
+#define EXTRAPOLATION_OUTER_BCS 0  // used to identify/specify params.outer_bc_type
+#define RADIATION_OUTER_BCS     1  // used to identify/specify params.outer_bc_type
 
-typedef struct __inner_bc__ {
-  gz_map inner_bc_dest_pt;
-  gz_map inner_bc_src_pt;
-  int8_t parity[10]; // We store the 10 parity conditions in 10 int8_t integers,
-                     // one for each condition. Note that these conditions can
-                     // only take one of two values: +1 or -1, hence the use of
-                     // int8_t, the smallest C data type.
-} inner_bc;
+typedef struct __innerpt_bc_struct__ {
+  int dstpt;  // dstpt is the 3D grid index IDX3S(i0,i1,i2) of the inner boundary point (i0,i1,i2)
+  int srcpt;  // srcpt is the 3D grid index (a la IDX3S) to which the inner boundary point maps
+  int8_t parity[10];  // parity[10] is a calculation of dot products for the 10 independent parity types
+} innerpt_bc_struct;
 
-typedef struct __outer_bc__ {
-  gz_map outer_bc_dest_pt;
-  int8_t FACEi0,FACEi1,FACEi2; // FACEi* takes values of -1, 0, and +1 only,
-                               // corresponding to MAXFACE, NUL, and MINFACE
-                               // respectively.
-                               // Thus int8_t (one byte each, the smallest C
-                               // type) is sufficient.
-} outer_bc;
+typedef struct __outerpt_bc_struct__ {
+  short i0,i1,i2;  // the outer boundary point grid index (i0,i1,i2), on the 3D grid
+  int8_t FACEX0,FACEX1,FACEX2;  // 1-byte integers that store
+  //                               FACEX0,FACEX1,FACEX2 = +1, 0, 0 if on the i0=i0min face,
+  //                               FACEX0,FACEX1,FACEX2 = -1, 0, 0 if on the i0=i0max face,
+  //                               FACEX0,FACEX1,FACEX2 =  0,+1, 0 if on the i1=i2min face,
+  //                               FACEX0,FACEX1,FACEX2 =  0,-1, 0 if on the i1=i1max face,
+  //                               FACEX0,FACEX1,FACEX2 =  0, 0,+1 if on the i2=i2min face, or
+  //                               FACEX0,FACEX1,FACEX2 =  0, 0,-1 if on the i2=i2max face,
+} outerpt_bc_struct;
 
-typedef struct __bcstruct__ {
-  outer_bc **outer; // Array of 1D arrays, of length
-                    //   [NGHOSTS][num_ob_gz_pts[which_outer_ghostzone_point]]
+typedef struct __bc_info_struct__ {
+  int num_inner_boundary_points;  // stores total number of inner boundary points
+  int num_pure_outer_boundary_points[NGHOSTS][3];  // stores number of outer boundary points on each
+  //                                                  ghostzone level and direction (update min and
+  //                                                  max faces simultaneously on multiple cores)
+  int bc_loop_bounds[NGHOSTS][6][6];  // stores outer boundary loop bounds. Unused after bcstruct_set_up()
+} bc_info_struct;
 
-  inner_bc **inner; // Array of 1D arrays, of length
-                    //   [NGHOSTS][num_ib_gz_pts[which_inner_ghostzone_point]]
-
-  // Arrays storing number of outer/inner boundary ghostzone points at each ghostzone,
-  //   of length NGHOSTS:
-  int     *num_ob_gz_pts;
-  int     *num_ib_gz_pts;
+typedef struct __bc_struct__ {
+  innerpt_bc_struct *restrict inner_bc_array;  // information needed for updating each inner boundary point
+  outerpt_bc_struct *restrict pure_outer_bc_array[NGHOSTS*3]; // information needed for updating each outer
+  //                                                             boundary point
+  bc_info_struct bc_info;  // stores number of inner and outer boundary points, needed for setting loop
+  //                          bounds and parallelizing over as many boundary points as possible.
 } bc_struct;
 
 /* PARITY TYPES FOR ALL GRIDFUNCTIONS.
@@ -243,21 +238,17 @@ typedef struct __MoL_gridfunctions_struct__ {
 // SET gridfunctions_f_infinity[i] = value of gridfunction i in the limit r->infinity:
 static const REAL gridfunctions_f_infinity[NUM_EVOL_GFS] = { 0.0, 0.0 };
 
-
-// SET gridfunctions_wavespeed[i] = gridfunction i's characteristic wave speed:
-static const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = { 1.0, 1.0 };
-
 // Declare the IDX4S(gf,i,j,k) macro, which enables us to store 4-dimensions of
 //   data in a 1D array. In this case, consecutive values of "i"
 //   (all other indices held to a fixed value) are consecutive in memory, where
 //   consecutive values of "j" (fixing all other indices) are separated by
 //   Nxx_plus_2NGHOSTS0 elements in memory. Similarly, consecutive values of
 //   "k" are separated by Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1 in memory, etc.
-#define IDX4S(g,i,j,k) \
+#define IDX4S(g,i,j,k)                                                  \
   ( (i) + Nxx_plus_2NGHOSTS0 * ( (j) + Nxx_plus_2NGHOSTS1 * ( (k) + Nxx_plus_2NGHOSTS2 * (g) ) ) )
 #define IDX4ptS(g,idx) ( (idx) + (Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2) * (g) )
 #define IDX3S(i,j,k) ( (i) + Nxx_plus_2NGHOSTS0 * ( (j) + Nxx_plus_2NGHOSTS1 * ( (k) ) ) )
-#define LOOP_REGION(i0min,i0max, i1min,i1max, i2min,i2max) \
+#define LOOP_REGION(i0min,i0max, i1min,i1max, i2min,i2max)              \
   for(int i2=i2min;i2<i2max;i2++) for(int i1=i1min;i1<i1max;i1++) for(int i0=i0min;i0<i0max;i0++)
 #define LOOP_OMP(__OMP_PRAGMA__, i0,i0min,i0max, i1,i1min,i1max, i2,i2min,i2max) _Pragma(__OMP_PRAGMA__) \
     for(int (i2)=(i2min);(i2)<(i2max);(i2)++) for(int (i1)=(i1min);(i1)<(i1max);(i1)++) for(int (i0)=(i0min);(i0)<(i0max);(i0)++)
@@ -277,4 +268,3 @@ typedef struct __griddata__ {
   MoL_gridfunctions_struct gridfuncs;
 } griddata_struct;
 //********************************************
-static REAL evolgf_speed[NUM_EVOL_GFS];
