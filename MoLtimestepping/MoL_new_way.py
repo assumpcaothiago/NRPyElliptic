@@ -223,9 +223,7 @@ def add_to_Cfunction_dict_MoL_step_forward_in_time(MoL_method,
                                                    RHS_string = "", post_RHS_string = "", post_post_RHS_string="",
                                                    enable_rfm=False, enable_curviBCs=False, enable_SIMD=False,
                                                    enable_griddata=False):
-#     includes = ["NRPy_basic_defines.h", "NRPy_function_prototypes.h"] 
-    includes = ["NRPy_basic_defines.h", "NRPy_function_prototypes.h", "apply_bcs_sommerfeld.h"]
-#   ^ Thiago's change
+    includes = ["NRPy_basic_defines.h", "NRPy_function_prototypes.h"]
     if enable_SIMD:
         includes += [os.path.join("SIMD", "SIMD_intrinsics.h")]
     desc  = "Method of Lines (MoL) for \"" + MoL_method + "\" method: Step forward one full timestep.\n"

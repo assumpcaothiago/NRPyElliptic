@@ -297,14 +297,15 @@ static const REAL gridfunctions_f_infinity[NUM_EVOL_GFS] = { """
                     outstr += str(glb_gridfcs_list[i].f_infinity) + ", "
         outstr = outstr[:-2] + " };\n"
 
-        outstr += """\n\n// SET gridfunctions_wavespeed[i] = gridfunction i's characteristic wave speed:
-static const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = { """
-        for evol_var in evolved_variables_list:  # This list is sorted; glb_gridfcs_list is not.
-            #                                      We need to preserve the order to ensure consistency with the #defines
-            for i, gf in enumerate(glb_gridfcs_list):
-                if gf.name == evol_var and gf.gftype == "EVOL":
-                    outstr += str(glb_gridfcs_list[i].wavespeed) + ", "
-        outstr = outstr[:-2] + " };\n"
+# Thiago's modification: NRPyElliptic cannot determine wavespeed at OB at this stage
+#         outstr += """\n\n// SET gridfunctions_wavespeed[i] = gridfunction i's characteristic wave speed:
+# static const REAL gridfunctions_wavespeed[NUM_EVOL_GFS] = { """
+#         for evol_var in evolved_variables_list:  # This list is sorted; glb_gridfcs_list is not.
+#             #                                      We need to preserve the order to ensure consistency with the #defines
+#             for i, gf in enumerate(glb_gridfcs_list):
+#                 if gf.name == evol_var and gf.gftype == "EVOL":
+#                     outstr += str(glb_gridfcs_list[i].wavespeed) + ", "
+#         outstr = outstr[:-2] + " };\n"
 
     return outstr
 
@@ -334,11 +335,11 @@ def register_C_functions_and_NRPy_basic_defines(enable_griddata_struct=True, ena
 //   consecutive values of "j" (fixing all other indices) are separated by
 //   Nxx_plus_2NGHOSTS0 elements in memory. Similarly, consecutive values of
 //   "k" are separated by Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1 in memory, etc.
-#define IDX4S(g,i,j,k) \
+#define IDX4S(g,i,j,k)                                                  \
   ( (i) + Nxx_plus_2NGHOSTS0 * ( (j) + Nxx_plus_2NGHOSTS1 * ( (k) + Nxx_plus_2NGHOSTS2 * (g) ) ) )
 #define IDX4ptS(g,idx) ( (idx) + (Nxx_plus_2NGHOSTS0*Nxx_plus_2NGHOSTS1*Nxx_plus_2NGHOSTS2) * (g) )
 #define IDX3S(i,j,k) ( (i) + Nxx_plus_2NGHOSTS0 * ( (j) + Nxx_plus_2NGHOSTS1 * ( (k) ) ) )
-#define LOOP_REGION(i0min,i0max, i1min,i1max, i2min,i2max) \
+#define LOOP_REGION(i0min,i0max, i1min,i1max, i2min,i2max)              \
   for(int i2=i2min;i2<i2max;i2++) for(int i1=i1min;i1<i1max;i1++) for(int i0=i0min;i0<i0max;i0++)
 #define LOOP_OMP(__OMP_PRAGMA__, i0,i0min,i0max, i1,i1min,i1max, i2,i2min,i2max) _Pragma(__OMP_PRAGMA__) \
     for(int (i2)=(i2min);(i2)<(i2max);(i2)++) for(int (i1)=(i1min);(i1)<(i1max);(i1)++) for(int (i0)=(i0min);(i0)<(i0max);(i0)++)
