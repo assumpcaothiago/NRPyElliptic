@@ -16,7 +16,8 @@ import cmdline_helper as cmd     # NRPy+: Multi-platform Python command-line int
 import shutil, os, sys           # Standard Python modules for multiplatform OS-level functions
 
 def Set_up_CurviBoundaryConditions(Ccodesdir,verbose=True,Cparamspath=os.path.join("../"),
-                                   enable_copy_of_static_Ccodes=True, BoundaryCondition="QuadraticExtrapolation"):
+                                   enable_copy_of_static_Ccodes=True, BoundaryCondition="QuadraticExtrapolation",
+                                   path_prefix=""):
     # Step P0: Check that Ccodesdir is not the same as CurviBoundaryConditions/boundary_conditions,
     #          to prevent trusted versions of these C codes from becoming contaminated.
     if os.path.join(Ccodesdir) == os.path.join("CurviBoundaryConditions", "boundary_conditions"):
@@ -35,7 +36,7 @@ def Set_up_CurviBoundaryConditions(Ccodesdir,verbose=True,Cparamspath=os.path.jo
         if   str(BoundaryCondition) == "QuadraticExtrapolation":
             for file in ["apply_bcs_curvilinear.h", "BCs_data_structs.h", "bcstruct_freemem.h", "CurviBC_include_Cfunctions.h",
                          "driver_bcstruct.h", "set_bcstruct.h", "set_up__bc_gz_map_and_parity_condns.h"]:
-                shutil.copy(os.path.join("CurviBoundaryConditions", "boundary_conditions", file),
+                shutil.copy(os.path.join(path_prefix,"CurviBoundaryConditions", "boundary_conditions", file),
                             os.path.join(Ccodesdir))
 
             with open(os.path.join(Ccodesdir,"CurviBC_include_Cfunctions.h"),"a") as file:
@@ -45,7 +46,7 @@ def Set_up_CurviBoundaryConditions(Ccodesdir,verbose=True,Cparamspath=os.path.jo
         elif str(BoundaryCondition) == "Sommerfeld":
             for file in ["BCs_data_structs.h", "bcstruct_freemem.h", "CurviBC_include_Cfunctions.h",
                          "driver_bcstruct.h", "set_bcstruct.h", "set_up__bc_gz_map_and_parity_condns.h"]:
-                shutil.copy(os.path.join("CurviBoundaryConditions", "boundary_conditions", file),
+                shutil.copy(os.path.join(path_prefix,"CurviBoundaryConditions", "boundary_conditions", file),
                             os.path.join(Ccodesdir))
 
             with open(os.path.join(Ccodesdir,"CurviBC_include_Cfunctions.h"),"a") as file:
@@ -55,7 +56,7 @@ def Set_up_CurviBoundaryConditions(Ccodesdir,verbose=True,Cparamspath=os.path.jo
         elif str(BoundaryCondition) == "QuadraticExtrapolation&Sommerfeld":
             for file in ["apply_bcs_curvilinear.h", "BCs_data_structs.h", "bcstruct_freemem.h", "CurviBC_include_Cfunctions.h",
                          "driver_bcstruct.h", "set_bcstruct.h", "set_up__bc_gz_map_and_parity_condns.h"]:
-                shutil.copy(os.path.join("CurviBoundaryConditions", "boundary_conditions", file),
+                shutil.copy(os.path.join(path_prefix,"CurviBoundaryConditions", "boundary_conditions", file),
                             os.path.join(Ccodesdir))
 
             with open(os.path.join(Ccodesdir,"CurviBC_include_Cfunctions.h"),"a") as file:
@@ -315,19 +316,12 @@ class sommerfeld_boundary_condition_class():
         var_speed_string = var_speed_string[:-2] + "};"
 
         # Writing to values to sommerfeld_params.h file
-#        out_str = """
-#// Sommerfeld EVOL grid function parameters
-#const REAL evolgf_at_inf[NUM_EVOL_GFS] = """+var_at_inf_string+"""
-#const REAL evolgf_radial_falloff_power[NUM_EVOL_GFS] = """+vars_radial_falloff_power_string+"""
-#const REAL evolgf_speed[NUM_EVOL_GFS] = """+var_speed_string+"""
-#"""
         out_str = """
 // Sommerfeld EVOL grid function parameters
 const REAL evolgf_at_inf[NUM_EVOL_GFS] = """+var_at_inf_string+"""
 const REAL evolgf_radial_falloff_power[NUM_EVOL_GFS] = """+vars_radial_falloff_power_string+"""
-//REAL evolgf_speed[NUM_EVOL_GFS] must be defined elsewhere
+const REAL evolgf_speed[NUM_EVOL_GFS] = """+var_speed_string+"""
 """
-# ^ Thiago's change
         return out_str
 
     @staticmethod
@@ -500,7 +494,8 @@ if(abs(FACEXi["""+dirn+"""])==1 || i"""+dirn+"""+NGHOSTS >= Nxx_plus_2NGHOSTS"""
 void contraction_term(const paramstruct *restrict params, const int which_gf, const REAL *restrict gfs, REAL *restrict xx[3],
            const int8_t FACEXi[3], const int i0, const int i1, const int i2, REAL *restrict _r, REAL *restrict _partial_i_f) {
 
-#include "./set_Cparameters.h"
+#include "RELATIVE_PATH__set_Cparameters.h" /* Header file containing correct #include for set_Cparameters.h;
+                                             * accounting for the relative path */
 
 // Initialize derivatives to crazy values, to ensure that
 //   we will notice in case they aren't set properly.
@@ -582,7 +577,8 @@ void apply_bcs_sommerfeld(const paramstruct *restrict params, REAL *restrict xx[
           const REAL radial_falloff_power = evolgf_radial_falloff_power[which_gf];
 
 
-          #include "./set_Cparameters.h"
+          #include "RELATIVE_PATH__set_Cparameters.h" /* Header file containing correct #include for set_Cparameters.h;
+                                                       * accounting for the relative path */
 
 
             for(int which_gz = 0; which_gz < NGHOSTS; which_gz++) {
@@ -655,9 +651,7 @@ void apply_bcs_sommerfeld(const paramstruct *restrict params, REAL *restrict xx[
     } // END for(int which_gf=0;which_gf<NUM_GFS;which_gf++)
 } // END function
 """
-#         with open(os.path.join(Ccodesdir,"boundary_conditions/apply_bcs_sommerfeld.h"),"w") as file:
-        with open(os.path.join(Ccodesdir,"apply_bcs_sommerfeld.h"),"w") as file:
-
+        with open(os.path.join(Ccodesdir,"boundary_conditions/apply_bcs_sommerfeld.h"),"w") as file:
             file.write(main_Ccode)
 
     def write_sommerfeld_file(self, Ccodesdir):
