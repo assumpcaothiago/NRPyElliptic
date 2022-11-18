@@ -52,6 +52,9 @@ def PunctureInitialDataCurvilinear_RHSs():
     #wavespeed = par.Cparameters("REAL",thismodule,"wavespeed", 1.0) 
     eta_damping = par.Cparameters("REAL",thismodule,"eta_damping", 1.0)
     time = par.Cparameters("REAL", thismodule, "time", 0.0)
+    # Declare wavespeeds of uu and vv at outer boundary
+    uu_wavespeed_at_OB = par.Cparameters("REAL", thismodule, "uu_wavespeed_at_OB", 1.0)
+    vv_wavespeed_at_OB = par.Cparameters("REAL", thismodule, "vv_wavespeed_at_OB", 1.0)
     
     # Declare spatially-dependent wavespeed as grid function
     wavespeed = gri.register_gridfunctions("AUXEVOL", ["wavespeed"])
