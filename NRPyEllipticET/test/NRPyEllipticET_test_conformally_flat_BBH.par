@@ -2,7 +2,6 @@ ActiveThorns = "
     ADMBase
     AEILocalInterp
     Boundary
-    Cactus
     Carpet
     CarpetIOASCII
     CartGrid3D
