@@ -1,9 +1,5 @@
 # Script for creating default test.ccl file:
 # for i in `ls -1 *.par|sed "s/.par//g"`;do echo "TEST " $i; echo "{";echo "  NPROCS 2"; echo "}"; echo "";done
-
-TEST NRPyEllipticET_test_conformally_flat_BBH
-{
-  NPROCS 2
-  ABSTOL 5e-6 NRPyEllipticET-uuGF # Linux vs Mac OS X: maximum absolute error in column 9 2.983789883004295e-06
-  RELTOL 9e-4 NRPyEllipticET-uuGF # Linux vs Mac OS X: maximum relative error in column 9 6.869145809540290e-04
-}
+NPROCS 2
+ABSTOL 5e-6 # Linux vs Mac OS X: maximum absolute error in column 9 2.983789883004295e-06
+RELTOL 9e-4 # Linux vs Mac OS X: maximum relative error in column 9 6.869145809540290e-04
