@@ -2,6 +2,7 @@ ActiveThorns = "
     ADMBase
     AEILocalInterp
     Boundary
+    Cactus
     Carpet
     CarpetIOASCII
     CartGrid3D
@@ -81,9 +82,9 @@ IOUtil::out_dir       = $parfile
 # Parameters of thorn NRPyEllipticET (implementing NRPyEllipticET)
 NRPyEllipticET::interpolator_name                         = "Hermite polynomial interpolation"
 NRPyEllipticET::interpolation_order                       = 3
-NRPyEllipticET::N0                                        = 64
-NRPyEllipticET::N1                                        = 64
-NRPyEllipticET::N2                                        = 16
+NRPyEllipticET::N0                                        = 48
+NRPyEllipticET::N1                                        = 48
+NRPyEllipticET::N2                                        = 12
 NRPyEllipticET::domain_size                               = 1e6
 NRPyEllipticET::sinh_width                                = 0.07
 NRPyEllipticET::eta_damping                               = 12.5
