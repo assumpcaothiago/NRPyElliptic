@@ -144,7 +144,7 @@ void NRPyEllipticET_conformally_flat_BBH_Initialize_ADMBase( const cGH *restrict
                                                                       input_array_dims,
                                                                       origin,deltas,
                                                                       interp_coords,
-                                                                      input_array,
+                                                                      &input_array[0][0][0],
                                                                       output_array);
 
   // Change the params to conform to the ETK grid
@@ -173,6 +173,5 @@ void NRPyEllipticET_conformally_flat_BBH_Initialize_ADMBase( const cGH *restrict
   free(points_dest_grid_xx0);
   free(points_dest_grid_xx1);
   free(points_dest_grid_xx2);
-  free((void *)output_array);
-
+  free(output_array);
 }
