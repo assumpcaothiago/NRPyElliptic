@@ -75,8 +75,6 @@
 %  thorn without the Cactus Flesh download this from the Cactus
 %  homepage at www.cactuscode.org)
 \usepackage{../../../../doc/latex/cactus}
-\usepackage{xspace}
-\newcommand{\nrpyell}{\texttt{NRPyEllipticET}\xspace}
 
 \begin{document}
 
@@ -87,7 +85,7 @@
   Terrence~Pierre~Jacques \textless tp0052@mix.wvu.edu\textgreater}
 
 % The title of the document (not necessarily the name of the Thorn)
-\title{\nrpyell}
+\title{\texttt{NRPyEllipticET}}
 
 % the date your document was last changed, if your document is in CVS,
 % please use:
@@ -101,6 +99,7 @@
 
 % Add all definitions used in this documentation here
 %   \def\mydef etc
+\newcommand{\nrpyell}{\texttt{NRPyEllipticET}}
 
 \begin{abstract}
   \noindent This thorn generates numerical relativity initial data
@@ -142,7 +141,7 @@ please see~\cite{assumpcao:2022}.
 \section{Initial data types}
 \subsection{Conformally flat binary black hole initial data}
 
-As described in~\cite{assumpcao:2022}, \nrpyell solves the Hamiltonian
+As described in~\cite{assumpcao:2022}, \nrpyell{} solves the Hamiltonian
 constraint using the conformal transverse-traceless (CTT) decomposition, i.e.,
 %%
 \begin{equation}
