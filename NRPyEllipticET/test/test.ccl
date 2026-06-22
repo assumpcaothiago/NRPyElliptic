@@ -1,7 +1,7 @@
 # Script for creating default test.ccl file:
 # for i in `ls -1 *.par|sed "s/.par//g"`;do echo "TEST " $i; echo "{";echo "  NPROCS 2"; echo "}"; echo "";done
 
-TEST NRPyEllipticET_test
+TEST NRPyEllipticET_test_conformally_flat_BBH
 {
   ABSTOL 3e-5
   RELTOL 5e-3
