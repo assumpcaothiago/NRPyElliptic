@@ -28,6 +28,7 @@ SRCS = NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation.c \
        conformally_flat_BBH_get_xx_from_xyz.c \
        conformally_flat_BBH_initial_guess_all_points.c \
        conformally_flat_BBH_initial_guess_single_point.c \
+       conformally_flat_BBH_leapfrog_step_forward_in_time.c \
        conformally_flat_BBH_lapse_averaged_initial_data.c \
        conformally_flat_BBH_lapse_power_of_psi_initial_data.c \
        conformally_flat_BBH_residual_all_points.c \

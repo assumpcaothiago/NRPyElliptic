@@ -3,6 +3,11 @@ void conformally_flat_BBH_MoL_free_memory_y_n_gfs(const paramstruct *restrict pa
 void conformally_flat_BBH_MoL_malloc_non_y_n_gfs(const paramstruct *restrict params, MoL_gridfunctions_struct *restrict gridfuncs);
 void conformally_flat_BBH_MoL_free_memory_non_y_n_gfs(const paramstruct *restrict params, MoL_gridfunctions_struct *restrict gridfuncs);
 void conformally_flat_BBH_MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt);
+void conformally_flat_BBH_leapfrog_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt);
+void conformally_flat_BBH_apply_bcs_sommerfeld(const paramstruct *restrict params, REAL *restrict xx[3],
+                                               const bc_struct *restrict bcstruct, const int NUM_GFS,
+                                               const int8_t *restrict gfs_parity, REAL *restrict gfs,
+                                               REAL *restrict rhs_gfs);
 void conformally_flat_BBH_set_bcstruct(const paramstruct *restrict params,
                                        gz_map *restrict bc_gz_map,
                                        parity_condition *bc_parity_conditions,

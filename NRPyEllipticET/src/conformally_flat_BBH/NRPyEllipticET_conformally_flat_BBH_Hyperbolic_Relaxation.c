@@ -181,19 +181,35 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
   int output_l2_norm_residual_every_N = info_output_freq; //= (int)((REAL)N_final/1000.0);
   if( output_l2_norm_residual_every_N == 0 ) output_l2_norm_residual_every_N = 1;
 
+  // Step 7.b.i: The leapfrog integrator needs uu^{-1} = uu^0 (vv = 0 initially)
+  const int use_leapfrog = CCTK_EQUALS(time_integrator, "leapfrog");
+  if( use_leapfrog ) {
+    memcpy(griddata.gridfuncs.k_even_gfs, griddata.gridfuncs.y_n_gfs, sizeof(REAL)*NUM_EVOL_GFS*Nxx_plus_2NGHOSTS_tot);
+  }
+  CCTK_VINFO("    Time integrator  = %s", time_integrator);
+
   int n;
   for(n=0;n<=N_final;n++) { // Main loop to progress forward in time.
 
     // Step 7.c: Step forward one timestep (t -> t+dt) in time using
     //           chosen RK-like MoL timestepping algorithm
-    conformally_flat_BBH_MoL_step_forward_in_time(&griddata, dt);
+    //           (leapfrog also stores the residual of the previous
+    //           time level in diagnostic_output_gfs as a byproduct)
+    if( use_leapfrog ) {
+      conformally_flat_BBH_leapfrog_step_forward_in_time(&griddata, dt);
+    }
+    else {
+      conformally_flat_BBH_MoL_step_forward_in_time(&griddata, dt);
+    }
 
     // Step 7.d: Check convergence & print information
     if( (n%output_l2_norm_residual_every_N == 0) || (n==N_final) ) {
 
       // Step 7.d.i: Compute residual and store it at diagnostic_output_gfs(UUFG)
-      conformally_flat_BBH_residual_all_points(&griddata.params, &griddata.rfmstruct, griddata.gridfuncs.auxevol_gfs,
-                                               griddata.gridfuncs.y_n_gfs, griddata.gridfuncs.diagnostic_output_gfs);
+      if( !use_leapfrog ) {
+        conformally_flat_BBH_residual_all_points(&griddata.params, &griddata.rfmstruct, griddata.gridfuncs.auxevol_gfs,
+                                                 griddata.gridfuncs.y_n_gfs, griddata.gridfuncs.diagnostic_output_gfs);
+      }
 
       const int residual_gf_index   = UUGF;
       const REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf(&griddata.params, residual_gf_index, residual_integration_radius,
@@ -215,7 +231,7 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
       }
 
       if( log_l2_norm_residual < log_target_residual ) {
-        CCTK_VINFO("Target log(residual) (%.2lf) has been met: %.2lf",log_target_residual, log_l2_norm_residual);
+        CCTK_VINFO("Target log(residual) (%.2lf) has been met: %.2lf after %d iterations",log_target_residual, log_l2_norm_residual, n);
         // We're done!
         n = 10*N_final;
         break;
@@ -243,7 +259,7 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
 
   // Step 10: Print final information about the run
   const clock_t end = clock();
-  CCTK_VINFO("Total execution time: %.0lf s", (end-start)/((REAL)CLOCKS_PER_SEC));
+  CCTK_VINFO("Total execution time: %.2lf s", (end-start)/((REAL)CLOCKS_PER_SEC));
 
   // Step 11: Free all allocated memory
   conformally_flat_BBH_rfm_precompute_rfmstruct_freemem(&griddata.params, &griddata.rfmstruct);
