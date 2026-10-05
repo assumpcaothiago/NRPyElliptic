@@ -3,3 +3,15 @@ TEST bbh_conformally_flat
   ABSTOL 3e-5
   RELTOL 5e-3
 }
+
+TEST NRPyEllipticET_test_leapfrog
+{
+  ABSTOL 1e-8
+  RELTOL 1e-6
+}
+
+TEST NRPyEllipticET_test_leapfrog_coarse_grid
+{
+  ABSTOL 1e-8
+  RELTOL 1e-6
+}

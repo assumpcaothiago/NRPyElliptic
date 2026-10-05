@@ -188,8 +188,56 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
   }
   CCTK_VINFO("    Time integrator  = %s", time_integrator);
 
-  int n;
-  for(n=0;n<=N_final;n++) { // Main loop to progress forward in time.
+  // Step 7.b.ii: EXPERIMENTAL grid sequencing (leapfrog only): relax on coarser grids first, then
+  //              finish on this grid. See NRPyEllipticET_conformally_flat_BBH_sequencing.c.
+  if( coarse_grid_levels > 0 && !use_leapfrog ) {
+    CCTK_ERROR("coarse_grid_levels > 0 requires time_integrator = \"leapfrog\".");
+  }
+  int n = 0;
+  if( coarse_grid_levels > 0 ) {
+    griddata_struct coarser;
+    for(int level=coarse_grid_levels; level>=1; level--) {
+      const int Nc[3] = { Nxx[0]>>level, Nxx[1]>>level, Nxx[2]>>level };
+      for(int d=0;d<3;d++) {
+        if( Nxx[d] % (1<<(level+1)) != 0 ) {
+          CCTK_VERROR("coarse_grid_levels = %d needs N0, N1, N2 divisible by %d (got %d %d %d).",
+                      (int)coarse_grid_levels, 1<<(level+1), Nxx[0], Nxx[1], Nxx[2]);
+        }
+      }
+      griddata_struct g;
+      REAL dtc;
+      conformally_flat_BBH_sequencing_griddata_setup(&griddata.params, Nc, CFL_FACTOR, griddata.params.eta_damping, &g, &dtc);
+      const int is_coarsest = (level == coarse_grid_levels);
+      if( !is_coarsest ) {
+        conformally_flat_BBH_sequencing_prolongate(&coarser, &g);
+        conformally_flat_BBH_sequencing_griddata_free(&coarser);
+      }
+      const clock_t t0 = clock();
+      REAL log_res;
+      const int its = conformally_flat_BBH_sequencing_relax(&g, dtc, is_coarsest ? 0 : prolongation_smoothing_steps,
+                                                            coarse_log_target_residual, N_final, residual_integration_radius, &log_res);
+      if( its < 0 ) CCTK_VERROR("Coarse level %dx%dx%d did not converge (log10 residual %.2f).", Nc[0], Nc[1], Nc[2], log_res);
+      CCTK_VINFO("Grid sequencing: %dx%dx%d: %d iterations, log10 residual %.2f, %.2f s",
+                 Nc[0], Nc[1], Nc[2], its, log_res, (clock()-t0)/((REAL)CLOCKS_PER_SEC));
+      coarser = g;
+    }
+    conformally_flat_BBH_sequencing_prolongate(&coarser, &griddata);
+    conformally_flat_BBH_sequencing_griddata_free(&coarser);
+    const clock_t t0 = clock();
+    REAL log_res;
+    const int its = conformally_flat_BBH_sequencing_relax(&griddata, dt, prolongation_smoothing_steps, log_target_residual,
+                                                          N_final, residual_integration_radius, &log_res);
+    if( its < 0 ) CCTK_VERROR("Relaxation did not converge (log10 residual %.2f).", log_res);
+    CCTK_VINFO("Grid sequencing: %dx%dx%d: %d iterations, %.2f s", Nxx[0], Nxx[1], Nxx[2], its, (clock()-t0)/((REAL)CLOCKS_PER_SEC));
+    CCTK_VINFO("Target log(residual) (%.2lf) has been met: %.2lf after %d iterations",log_target_residual, log_res, its);
+    n = 10*N_final; // skip the standard loop below
+  }
+
+  // Precomputed weights for the residual's L2 norm (bitwise identical, much cheaper per call).
+  REAL *restrict l2_weights = conformally_flat_BBH_L2_norm_weights_malloc(&griddata.params, residual_integration_radius, griddata.xx);
+  if( l2_weights == NULL ) CCTK_ERROR("Could not allocate L2-norm weights.");
+
+  for(;n<=N_final;n++) { // Main loop to progress forward in time.
 
     // Step 7.c: Step forward one timestep (t -> t+dt) in time using
     //           chosen RK-like MoL timestepping algorithm
@@ -212,8 +260,8 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
       }
 
       const int residual_gf_index   = UUGF;
-      const REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf(&griddata.params, residual_gf_index, residual_integration_radius,
-                                                                           griddata.xx, griddata.gridfuncs.diagnostic_output_gfs);
+      const REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf_weighted(&griddata.params, residual_gf_index, l2_weights,
+                                                                                    griddata.gridfuncs.diagnostic_output_gfs);
       if( verbose && info_output_freq > 0 ) {
         // Step 7.d.ii: Compute time elapsed during the executation of this thorn
         const clock_t end = clock();
@@ -238,6 +286,7 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
       }
     }
   } // End main loop to progress forward in time.
+  free(l2_weights);
 
   if( n==N_final ) {
     // This means the stopping criterion was not met. Error out.

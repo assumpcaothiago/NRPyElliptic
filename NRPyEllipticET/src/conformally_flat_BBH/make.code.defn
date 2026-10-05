@@ -36,6 +36,8 @@ SRCS = NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation.c \
        conformally_flat_BBH_rfm_precompute_rfmstruct_freemem.c \
        conformally_flat_BBH_rfm_precompute_rfmstruct_malloc.c \
        conformally_flat_BBH_rhs_eval.c \
+       NRPyEllipticET_conformally_flat_BBH_sequencing.c \
+       conformally_flat_BBH_L2_norm_weights.c \
        conformally_flat_BBH_set_Cparameters_to_default.c \
        conformally_flat_BBH_set_Nxx_dxx_invdx_params__and__xx.c \
        conformally_flat_BBH_set_bcstruct.c \

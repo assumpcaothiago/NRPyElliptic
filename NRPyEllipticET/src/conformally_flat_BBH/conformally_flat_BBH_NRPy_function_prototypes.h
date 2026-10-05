@@ -4,6 +4,17 @@ void conformally_flat_BBH_MoL_malloc_non_y_n_gfs(const paramstruct *restrict par
 void conformally_flat_BBH_MoL_free_memory_non_y_n_gfs(const paramstruct *restrict params, MoL_gridfunctions_struct *restrict gridfuncs);
 void conformally_flat_BBH_MoL_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt);
 void conformally_flat_BBH_leapfrog_step_forward_in_time(griddata_struct *restrict griddata, const REAL dt);
+void conformally_flat_BBH_sequencing_griddata_setup(const paramstruct *restrict params_template, const int Nxx[3],
+                                                    const REAL CFL_FACTOR, const REAL eta, griddata_struct *restrict gd,
+                                                    REAL *restrict dt);
+void conformally_flat_BBH_sequencing_griddata_free(griddata_struct *restrict gd);
+int conformally_flat_BBH_sequencing_relax(griddata_struct *restrict gd, const REAL dt, const int n_smooth, const REAL log_target,
+                                          const int max_its, const REAL residual_radius, REAL *restrict final_log_residual);
+REAL *conformally_flat_BBH_L2_norm_weights_malloc(const paramstruct *restrict params, const REAL integration_radius,
+                                                  REAL *restrict xx[3]);
+REAL conformally_flat_BBH_L2_norm_of_gf_weighted(const paramstruct *restrict params, const int gf_index, const REAL *restrict w,
+                                                 const REAL *restrict in_gf);
+void conformally_flat_BBH_sequencing_prolongate(const griddata_struct *restrict c, griddata_struct *restrict f);
 void conformally_flat_BBH_apply_bcs_sommerfeld(const paramstruct *restrict params, REAL *restrict xx[3],
                                                const bc_struct *restrict bcstruct, const int NUM_GFS,
                                                const int8_t *restrict gfs_parity, REAL *restrict gfs,
