@@ -144,6 +144,27 @@ CCTK_REAL NRPy_epsilon "Small number to avoid singularities at the punctures"
   *:* :: "Can be anything"
 } 1e-8
 
+CCTK_KEYWORD time_integrator "Time integrator for the relaxation time evolution."
+{
+  "RK4"      :: "Fourth-order Runge-Kutta on the first-order (uu,vv) system: four RHS evaluations per step"
+  "leapfrog" :: "Centered differences on uu_tt + eta uu_t = c^2 R(uu): one RHS evaluation per step. Stable up to ~0.71 of the RK4 CFL_FACTOR."
+} "RK4"
+
+CCTK_INT coarse_grid_levels "EXPERIMENTAL (leapfrog only): relax first on grids with N0, N1, N2 halved per level, then interpolate to the next finer grid (grid sequencing)."
+{
+  0:2 :: "0 = off"
+} 0
+
+CCTK_REAL coarse_log_target_residual "EXPERIMENTAL: log10 L2 residual at which a coarse level hands over to the next finer grid (-6 tested; deeper did not help)."
+{
+  *:0 :: "Should be negative"
+} -6.0
+
+CCTK_INT prolongation_smoothing_steps "EXPERIMENTAL: with coarse_grid_levels > 0, after each interpolation to a finer grid, number of steps with eta = 2/dt (Richardson smoothing) before normal relaxation."
+{
+  0:* :: "Tested: 400 on the 128x128x16 grid"
+} 400
+
 CCTK_REAL CFL_FACTOR "CFL factor of the relaxation time evolution."
 {
   0:1 :: "Between zero and one. For higher resolutions this will have to be lowered."

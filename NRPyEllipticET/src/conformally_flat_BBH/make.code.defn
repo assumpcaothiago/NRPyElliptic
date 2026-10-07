@@ -28,6 +28,7 @@ SRCS = NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation.c \
        conformally_flat_BBH_get_xx_from_xyz.c \
        conformally_flat_BBH_initial_guess_all_points.c \
        conformally_flat_BBH_initial_guess_single_point.c \
+       conformally_flat_BBH_leapfrog_step_forward_in_time.c \
        conformally_flat_BBH_lapse_averaged_initial_data.c \
        conformally_flat_BBH_lapse_power_of_psi_initial_data.c \
        conformally_flat_BBH_residual_all_points.c \
@@ -35,6 +36,8 @@ SRCS = NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation.c \
        conformally_flat_BBH_rfm_precompute_rfmstruct_freemem.c \
        conformally_flat_BBH_rfm_precompute_rfmstruct_malloc.c \
        conformally_flat_BBH_rhs_eval.c \
+       NRPyEllipticET_conformally_flat_BBH_sequencing.c \
+       conformally_flat_BBH_L2_norm_weights.c \
        conformally_flat_BBH_set_Cparameters_to_default.c \
        conformally_flat_BBH_set_Nxx_dxx_invdx_params__and__xx.c \
        conformally_flat_BBH_set_bcstruct.c \
