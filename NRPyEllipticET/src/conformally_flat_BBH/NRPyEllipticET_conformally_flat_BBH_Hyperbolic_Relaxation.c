@@ -194,6 +194,7 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
     CCTK_ERROR("coarse_grid_levels > 0 requires time_integrator = \"leapfrog\".");
   }
   int n = 0;
+  int converged = 0;
   if( coarse_grid_levels > 0 ) {
     griddata_struct coarser;
     for(int level=coarse_grid_levels; level>=1; level--) {
@@ -230,14 +231,14 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
     if( its < 0 ) CCTK_VERROR("Relaxation did not converge (log10 residual %.2f).", log_res);
     CCTK_VINFO("Grid sequencing: %dx%dx%d: %d iterations, %.2f s", Nxx[0], Nxx[1], Nxx[2], its, (clock()-t0)/((REAL)CLOCKS_PER_SEC));
     CCTK_VINFO("Target log(residual) (%.2lf) has been met: %.2lf after %d iterations",log_target_residual, log_res, its);
-    n = 10*N_final; // skip the standard loop below
+    converged = 1; // skip the standard loop below
   }
 
   // Precomputed weights for the residual's L2 norm (bitwise identical, much cheaper per call).
   REAL *restrict l2_weights = conformally_flat_BBH_L2_norm_weights_malloc(&griddata.params, residual_integration_radius, griddata.xx);
   if( l2_weights == NULL ) CCTK_ERROR("Could not allocate L2-norm weights.");
 
-  for(;n<=N_final;n++) { // Main loop to progress forward in time.
+  for(;!converged && n<=N_final;n++) { // Main loop to progress forward in time.
 
     // Step 7.c: Step forward one timestep (t -> t+dt) in time using
     //           chosen RK-like MoL timestepping algorithm
@@ -260,8 +261,16 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
       }
 
       const int residual_gf_index   = UUGF;
-      const REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf_weighted(&griddata.params, residual_gf_index, l2_weights,
-                                                                                    griddata.gridfuncs.diagnostic_output_gfs);
+      REAL log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf_weighted(&griddata.params, residual_gf_index, l2_weights,
+                                                                              griddata.gridfuncs.diagnostic_output_gfs);
+      // Leapfrog caches the previous time level's residual. Confirm convergence on
+      // the solution we will return, and always check that solution on the last step.
+      if( use_leapfrog && (log_l2_norm_residual < log_target_residual || n == N_final) ) {
+        conformally_flat_BBH_residual_all_points(&griddata.params, &griddata.rfmstruct, griddata.gridfuncs.auxevol_gfs,
+                                                 griddata.gridfuncs.y_n_gfs, griddata.gridfuncs.diagnostic_output_gfs);
+        log_l2_norm_residual = conformally_flat_BBH_L2_norm_of_gf_weighted(&griddata.params, residual_gf_index, l2_weights,
+                                                                         griddata.gridfuncs.diagnostic_output_gfs);
+      }
       if( verbose && info_output_freq > 0 ) {
         // Step 7.d.ii: Compute time elapsed during the executation of this thorn
         const clock_t end = clock();
@@ -278,17 +287,17 @@ void NRPyEllipticET_conformally_flat_BBH_Hyperbolic_Relaxation() {
                    n, griddata.params.time, completion*100, time_elapsed_s, time_left_s, log_l2_norm_residual);
       }
 
-      if( log_l2_norm_residual < log_target_residual ) {
+      if( isfinite(log_l2_norm_residual) && log_l2_norm_residual < log_target_residual ) {
         CCTK_VINFO("Target log(residual) (%.2lf) has been met: %.2lf after %d iterations",log_target_residual, log_l2_norm_residual, n);
         // We're done!
-        n = 10*N_final;
+        converged = 1;
         break;
       }
     }
   } // End main loop to progress forward in time.
   free(l2_weights);
 
-  if( n==N_final ) {
+  if( !converged ) {
     // This means the stopping criterion was not met. Error out.
     CCTK_ERROR("Solution did not reach the specified tolerance in the given number of iterations. Please increase max_iterations or the convergence criterion on the parfile.");
   }

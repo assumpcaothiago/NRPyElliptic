@@ -50,7 +50,7 @@ void conformally_flat_BBH_sequencing_griddata_free(griddata_struct *restrict gd)
 }
 
 // Leapfrog relaxation of gd from rest (uu^{-1} = uu^0) until log10(L2 residual within residual_radius)
-// < log_target, checked every info_output_freq steps (every step if 0), like the standard loop. The
+// < log_target, checked every info_output_freq steps (every step if 0) and on the last step. The
 // first n_smooth steps use eta = 2/dt (Richardson smoothing; see above). Returns the number of steps,
 // or -1 if max_its is reached or the residual becomes non-finite.
 int conformally_flat_BBH_sequencing_relax(griddata_struct *restrict gd, const REAL dt, const int n_smooth, const REAL log_target,
@@ -68,9 +68,17 @@ int conformally_flat_BBH_sequencing_relax(griddata_struct *restrict gd, const RE
     gd->params.eta_damping = (n < n_smooth) ? 2.0 / dt : eta;
     conformally_flat_BBH_leapfrog_step_forward_in_time(gd, dt);
     gd->params.eta_damping = eta;
-    if (n % check_every != 0) continue;
+    const int last_step = (n == max_its - 1);
+    if (n % check_every != 0 && !last_step) continue;
     // Residual of the time level before this step (computed by the leapfrog step).
-    const REAL log_res = conformally_flat_BBH_L2_norm_of_gf_weighted(&gd->params, UUGF, weights, gd->gridfuncs.diagnostic_output_gfs);
+    REAL log_res = conformally_flat_BBH_L2_norm_of_gf_weighted(&gd->params, UUGF, weights, gd->gridfuncs.diagnostic_output_gfs);
+    // Only pay for a fresh residual when convergence looks possible or this is the
+    // last step. Acceptance must refer to the current solution, not the cached one.
+    if (log_res < log_target || last_step) {
+      conformally_flat_BBH_residual_all_points(&gd->params, &gd->rfmstruct, gd->gridfuncs.auxevol_gfs,
+                                               gd->gridfuncs.y_n_gfs, gd->gridfuncs.diagnostic_output_gfs);
+      log_res = conformally_flat_BBH_L2_norm_of_gf_weighted(&gd->params, UUGF, weights, gd->gridfuncs.diagnostic_output_gfs);
+    }
     *final_log_residual = log_res;
     if (verbose)
       CCTK_VINFO("  relax %dx%dx%d it %6d log10 residual %.3f", gd->params.Nxx0, gd->params.Nxx1, gd->params.Nxx2, n, log_res);
